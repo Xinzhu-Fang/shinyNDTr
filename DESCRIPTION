@@ -9,6 +9,7 @@ Depends: R (>= 3.4.4)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: shinydashboard,
-         shinyAce,
-         shinyFiles
+Imports: 
+    shinydashboard,
+    shinyAce,
+    shinyFiles
