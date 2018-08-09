@@ -20,8 +20,8 @@ ui <- dashboardPage(
                              box(width = NULL,
                                  helpText("We only accept .mat and .Rda format !"),
                                  fileInput("bin_uploaded_raster", lLabel$bin_uploaded_raster, multiple = TRUE),
-                                 shinyFiles::shinyDirButton("bin_chosen_raster", lLabel$bin_chosen_raster, "", FALSE),
-                                 helpText("Full path of your chosen raster directory: "),
+                                 shinyFiles::shinyDirButton("bin_chosen_raster", lLabel$bin_chosen_raster, ""),
+                                 helpText("Full path of your chosen directory of raster data: "),
 
                                  textOutput("bin_show_chosen_raster"),
                                  uiOutput("bin_offer_create_raster"),
@@ -123,8 +123,10 @@ ui <- dashboardPage(
                                                width = NULL,
                                                solidHeader = TRUE, status = "primary",
                                                fileInput("DS_uploaded_bin", lLabel$DS_uploaded_bin, multiple = TRUE),
-                                               shinyFiles::shinyFilesButton("DS_chosen_bin", lLabel$DS_chosen_bin, "", FALSE),
+                                               shinyFiles::shinyFilesButton("DS_chosen_bin", lLabel$DS_chosen_bin, "", multiple = FALSE),
+                                               helpText("Full path of your chosen binned data file: "),
 
+                                               textOutput("DS_show_chosen_bin"),
                                                selectInput("DS_type", lLabel$DS_type, c("basic_DS","generalization_DS")),
 
 
@@ -208,7 +210,10 @@ ui <- dashboardPage(
                                              tabPanel("Script",
                                                       fileInput("DC_upload", lLabel$DC_upload, multiple = TRUE),
                                                       # script will show upon chosen
-                                                      uiOutput("DC_list_of_scripts"),
+                                                      shinyFiles::shinyFilesButton("DC_chosen_script", lLabel$DC_chosen_script, "", multiple = FALSE),
+                                                      helpText("Full path of your chosen script: "),
+
+                                                      textOutput("DC_show_chosen_script"),
                                                       actionButton("DC_scriptize", "generate script from gui configuration"),
                                                       uiOutput("DC_scriptize_error")
                                              )
@@ -225,11 +230,16 @@ ui <- dashboardPage(
 
 
                                column(width = 6,
-                                      uiOutput("DC_ace"),
+                                      box(width = NULL,
+                                          height = NULL,
 
-                                      actionButton("DC_run_decoding", "Run Decoding"),
-                                      # textinput of filename to be saved if not existing and to be saved as if existing;
-                                      actionButton("DC_save_script", "Save the script")
+                                          uiOutput("DC_ace"),
+
+                                          actionButton("DC_run_decoding", "Run Decoding"),
+                                          # textinput of filename to be saved if not existing and to be saved as if existing;
+                                          actionButton("DC_save_script", "Save the script")
+                                          )
+
 
                                )
 

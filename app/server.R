@@ -12,6 +12,8 @@ function(input, output, session) {
   # !
   raster_base_dir <- file.path(eval(getwd()),'data/raster') #"."
   bin_base_dir <- file.path(eval(getwd()),'data/binned') #"."
+  script_base_dir <- file.path(eval(getwd()),'tests') #"."
+
   rv <- reactiveValues()
 
   rv$raster_base_dir <- raster_base_dir
@@ -23,18 +25,23 @@ function(input, output, session) {
   rv$raster_bRda <- FALSE
   rv$raster_bMat <-FALSE
 
+  # !
   rv$create_bin_function_run <- ""
   rv$create_raster_function_run <- ""
 
-  rv$bin_base_dir <- bin_base_dir
-  rv$bin_cur_file_name <- NULL
-  rv$bin_cur_data <- NULL
-  rv$bin_maximum_num_of_levels_in_all_var <- NULL
-  rv$all_var <- NULL
+  rv$binned_base_dir <- bin_base_dir
+  rv$binned_file_name <- NULL
+  rv$binned_data <- NULL
+  rv$binned_maximum_num_of_levels_in_all_var <- NULL
+  rv$binned_all_var <- NULL
 
+  rv$script_base_dir <- script_base_dir
+  rv$script_name <- NULL
+  rv$script <- NULL
   # only files meet specified files types will be shown. However, such dir shown as empty can still be choosed
   shinyFiles::shinyDirChoose(input, "bin_chosen_raster", roots = c(wd=raster_base_dir), filetypes = c("mat", "Rda"))
   shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=bin_base_dir), filetypes = "Rda")
+  shinyFiles::shinyFileChoose(input, "DC_chosen_script", root =c(wd=script_base_dir, filetypes = c("R", "Rmd")))
 
   observe({
     req(input$bin_chosen_raster)
@@ -48,12 +55,12 @@ function(input, output, session) {
 
     temp_names_of_all_mat_files_in_raster_dir <-
       list.files(rv$raster_cur_dir_name, pattern = "\\.mat$")
-    # browser()
+    #
     if(length(temp_names_of_all_mat_files_in_raster_dir) > 0){
       rv$raster_bMat <- TRUE
 
       print(rv$raster_bMat)
-      # browser()
+      #
 
       print("mat")
     } else {
@@ -81,18 +88,26 @@ function(input, output, session) {
 
   observe({
     req(input$DS_chosen_bin)
-    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$bin_base_dir),input$DS_chosen_bin)
+    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$binned_base_dir),input$DS_chosen_bin)
     print(temp_df_file)
     req(temp_df_file$datapath)
-    rv$bin_cur_file_name <- temp_df_file$datapath
-    browser()
-    load(rv$bin_cur_file_name)
-    rv$bin_cur_data <- binned_data
-    rv$bin_maximum_num_of_levels_in_all_var <- max(apply(select(binned_data, starts_with("labels"))[,],2, function(x) length(levels(as.factor(x)))))
-    rv$all_var <- sub("labels.", "", names(select(binned_data, starts_with("labels"))))
-    browser()
+    rv$binned_file_name <- temp_df_file$datapath
+
+    load(rv$binned_file_name)
+    rv$binned_data <- binned_data
+    rv$binned_maximum_num_of_levels_in_all_var <- max(apply(select(binned_data, starts_with("labels"))[,],2, function(x) length(levels(as.factor(x)))))
+    rv$binned_all_var <- sub("labels.", "", names(select(binned_data, starts_with("labels"))))
+
   })
 
+  observe({
+    req(input$DC_chosen_script)
+    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$script_base_dir),input$DC_chosen_script)
+    print(temp_df_file)
+    req(temp_df_file$datapath)
+    rv$script_name <- temp_df_file$datapath
+    rv$script <- readChar(rv$script_name, file.info(rv$script_name)$size)
+  })
 
   observeEvent(input$bin_bin_data,{
     if(rv$raster_bRda){
@@ -234,14 +249,14 @@ function(input, output, session) {
   })
 
   reactive_bin_num_neuron <- reactive({
-    req(rv$bin_cur_file_name)
+    req(rv$binned_file_name)
 
     # this error message doesn't show up now since datasource is on the first tab and DS is selected. I keep it here
     # as an example of using validate
     validate(
       need(input$DS_chosen_bin,"Please select data source first to get total number of neurons!")
     )
-    binned_data = rv$bin_cur_data
+    binned_data = rv$binned_data
     length(unique(factor(binned_data$siteID)))
   })
 
@@ -251,11 +266,11 @@ function(input, output, session) {
 
 
   reactive_all_levels_of_basic_var_to_decode <- reactive({
-    req(rv$bin_cur_file_name)
+    req(rv$binned_file_name)
 
     # if(!is.null(input$DS_chosen_bin)){
 
-    binned_data = rv$bin_cur_data
+    binned_data = rv$binned_data
     print(head(binned_data))
     print(input$DS_var_to_decode)
     levels(factor(binned_data[[paste0("labels.",input$DS_basic_var_to_decode)]]))
@@ -265,9 +280,9 @@ function(input, output, session) {
 
   reactive_all_levels_of_gen_var_to_use <- reactive({
     # if(!is.null(input$DS_chosen_bin)){
-    req(rv$bin_cur_file_name)
+    req(rv$binned_file_name)
 
-    binned_data = rv$bin_cur_data
+    binned_data = rv$binned_data
     print(head(binned_data))
     print(input$DS_var_to_decode)
     levels(factor(binned_data[[paste0("labels.",input$DS_gen_var_to_use)]]))
@@ -314,7 +329,7 @@ function(input, output, session) {
   })
 
   output$bin_evil_raster = renderUI({
-    # browser()
+    #
     req(rv$raster_cur_dir_name)
     validate(
 
@@ -361,14 +376,17 @@ function(input, output, session) {
   })
 
 
+  output$DS_show_chosen_bin = renderText({
 
+    rv$binned_file_name
+  })
 
   output$DS_basic_list_of_var_to_decode = renderUI({
-    req(rv$bin_cur_file_name)
+    req(rv$binned_file_name)
 
     selectInput("DS_basic_var_to_decode",
                 lLabel$DS_basic_var_to_decode,
-                rv$all_var
+                rv$binned_all_var
                 # c("")
 
     )
@@ -376,11 +394,11 @@ function(input, output, session) {
   })
 
   output$DS_gen_list_of_var_to_decode = renderUI({
-    req(rv$bin_cur_file_name)
+    req(rv$binned_file_name)
 
     selectInput("DS_gen_var_to_decode",
                 lLabel$DS_gen_var_to_decode,
-                rv$all_var
+                rv$binned_all_var
                 # c("")
 
     )
@@ -398,17 +416,17 @@ function(input, output, session) {
   })
   #
   output$DS_gen_list_of_var_to_use = renderUI({
-    req(rv$bin_cur_file_name)
+    req(rv$binned_file_name)
 
     selectInput("DS_gen_var_to_use",
                 lLabel$DS_gen_var_to_use,
-                rv$all_var)
+                rv$binned_all_var)
   })
 
   output$DS_gen_select_num_of_groups = renderUI({
-    req(rv$bin_cur_file_name)
+    req(rv$binned_file_name)
 
-    temp_max <- rv$bin_maximum_num_of_levels_in_all_var
+    temp_max <- rv$binned_maximum_num_of_levels_in_all_var
     numericInput("DS_gen_num_training_level_groups",
                  lLabel$DS_gen_num_training_level_groups,
                  1,
@@ -487,6 +505,9 @@ function(input, output, session) {
                  max = reactive_bin_num_neuron() - input$FP_selected_k)
   })
 
+  output$DC_show_chosen_script = renderText({
+    rv$script_name
+  })
 
   output$DC_ace = renderUI({
     shinyAce::aceEditor("script",
@@ -497,20 +518,6 @@ function(input, output, session) {
     # check all inputs and poentially send error message !
 
   })
-  # output$DC_list_of_scripts = renderUI({
-  #   # list(
-  #     selectInput("DC_script",
-  #                        "Chosse an existing script to show",
-  #                        list.files('tests', "*.R")
-  #   )#,
-  #   # actionButton("DC_show", "Show script")
-  #   # )
-  #
-  #
-  # })
-  # output$DC_script_to_show = renderUI({
-  #   htmlOutput("input$DC_script")
-  # })
 }
 
 
