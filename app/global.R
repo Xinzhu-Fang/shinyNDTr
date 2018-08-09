@@ -3,7 +3,7 @@ library('fields')
 library('ggplot2')
 library("plotrix")
 library('shinydashboard')
-
+library('dplyr')
 
 
 rm(list=ls())
@@ -37,8 +37,8 @@ all_input <- list()
 input_id <- c("bin_create_raster",
               "bin_bin_data", "bin_bin_width", "bin_bPlot", "bin_chosen_raster",
               "bin_end_ind", "bin_next_neuron", "bin_prefix_of_binned_file_name",
-              "bin_new_raster", 
-              "bin_pre_neuron", 
+              "bin_new_raster",
+              "bin_pre_neuron", "bin_raster_end_ind","bin_raster_start_ind",
               "bin_start_ind", "bin_step_size",
   "bin_uploaded_raster", "CL", "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
   "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "CV_repeat", "CV_resample",
@@ -50,13 +50,13 @@ input_id <- c("bin_create_raster",
   "script", "sidebarCollapsed", "sidebarItemExpanded")
 
 
-input_label <- c("Create raster", 
+input_label <- c("Create raster",
                  "Bin the data", "Bin width", "Plot the data? (only for spike trains in .Rda file)", "Choose raster data directory",
-                 "Index of the time where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD_)",
+                 "Index of the sample where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD)",
                  "New raster directory name (e.g., data/raster/Zhang_Desimone_7objects_raster_data_rda; by default, we append '_rda' to the matlab raster directory name)",
-                 "previous file", 
-                 "Index of the time where the first bin starts (optional)", "Step size",
-                 "Upload new raster data (optional; only accept .mat and .Rda formmat)", "Classifier", "Coef0", "Cost", "Degree of polynomial",
+                 "previous file", "Index of the sample where the new raster data end","Index of the sample where the new raster data begin",
+                 "Index of the sample where the first bin starts (optional)", "Step size",
+                 "Upload new raster data (optional)", "Classifier", "Coef0", "Cost", "Degree of polynomial",
                  "Gamma", "Kernel", "Test only at training times?", "Number of repeats of each level in each CV split", "Number of resampling runs",
                  "Number of cross validation split", "Run decoding", "Save the script", "Generate script from gui configuration",
                  "Upload new script (optional)", "Levels to use", "Variable to decode and to use", "Use all the levels of this variable?",

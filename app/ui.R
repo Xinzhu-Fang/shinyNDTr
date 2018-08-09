@@ -7,7 +7,7 @@ ui <- dashboardPage(
       menuItem("Bining the raster data", tabName = "bin"),
       menuItem("Population Decoding", tabName = "decode")#,
       # menuItem("Single Neuron Analysis", tabName = "single")
-      
+
     )),
   dashboardBody(
     tabItems(
@@ -25,9 +25,10 @@ ui <- dashboardPage(
 
                                  textOutput("bin_show_chosen_raster"),
                                  uiOutput("bin_offer_create_raster"),
-                                 uiOutput("bin_evil_raster")
-                                 
-                                 
+                                 uiOutput("bin_evil_raster"),
+                                 textOutput("bin_show_create_raster_function_run")
+
+
                              )
 
 
@@ -45,9 +46,8 @@ ui <- dashboardPage(
                                           numericInput("bin_start_ind", lLabel$bin_start_ind, value = NULL),
                                           numericInput("bin_end_ind", lLabel$bin_end_ind, value = NULL),
                                           textInput("bin_prefix_of_binned_file_name", lLabel$bin_prefix_of_binned_file_name),
-                                          actionButton("bin_bin_data", lLabel$bin_bin_data)#,
-                                          # textOutput("bin_evil_raster")
-                                      )
+                                          actionButton("bin_bin_data", lLabel$bin_bin_data),
+                                          textOutput("bin_show_create_bin_function_run")                                      )
 
 
 
@@ -81,7 +81,7 @@ ui <- dashboardPage(
                                           color = "green", ribbon = TRUE, title_side = "top right",
                                           # conditionalPanel(condition = "input.bin_bPlot",
 
-                                                           plotOutput("bin_raster_plot")
+                                          plotOutput("bin_raster_plot")
 
                                       ),
                                       box(width = NULL,
@@ -89,7 +89,7 @@ ui <- dashboardPage(
                                           color = "red", ribbon = TRUE, title_side = "top right",
                                           # conditionalPanel(condition = "input.bin_bPlot",
 
-                                                           plotOutput("bin_PSTH")
+                                          plotOutput("bin_PSTH")
 
                                       )
                                )
@@ -109,21 +109,21 @@ ui <- dashboardPage(
                          tabPanel(
                            title = "Specifing decoding papameters",
                            fluidPage(
-                             
-                             
-                             
+
+
+
                              fluidRow(
                                column(width = 6,
                                       tabBox(width = 12,
                                              height = 1000,
-                                             
-                                             
+
+
                                              tabPanel(
                                                title = "Data source",
                                                width = NULL,
                                                solidHeader = TRUE, status = "primary",
                                                fileInput("DS_uploaded_bin", lLabel$DS_uploaded_bin, multiple = TRUE),
-                                               uiOutput("DS_list_of_binned_files"),
+                                               shinyFiles::shinyFilesButton("DS_chosen_bin", lLabel$DS_chosen_bin, "", FALSE),
 
                                                selectInput("DS_type", lLabel$DS_type, c("basic_DS","generalization_DS")),
 
@@ -146,7 +146,7 @@ ui <- dashboardPage(
                                                                 # uiOutput("DS_gen_list_of_testing_level_groups")
                                                )
                                              ),
-                                             
+
                                              tabPanel(
                                                title = "Classifier",
                                                width = NULL,
@@ -171,8 +171,8 @@ ui <- dashboardPage(
                                                                                                 3,
                                                                                                 min = 2,
                                                                                                 max  = 10)),
-                                                                  
-                                                                  
+
+
                                                                   conditionalPanel(condition = "input.CL_SVM_kernel == 'radial'|input.CL_SVM_kernel == 'polynomial'",
                                                                                    numericInput("CL_SVM_coef0",
                                                                                                 lLabel$CL_SVM_coef0, # Constant in the kernel function",
@@ -180,21 +180,21 @@ ui <- dashboardPage(
                                                                   conditionalPanel(condition = "input.CL_SVM_kernel == 'radial'|input.CL_SVM_kernel == 'polynomial'|input.CL_SVM_kernel == 'sigmoid'",
                                                                                    numericInput("CL_SVM_gamma",
                                                                                                 lLabel$CL_SVM_gamma,
-                                                                                                NULL) 
+                                                                                                NULL)
                                                                   )
                                                  ))
-                                               
+
                                              ),
                                              tabPanel(
                                                title = "Feature preprocessors",
                                                width = NULL,
                                                solidHeader = TRUE, status = "primary",
-                                               
+
                                                uiOutput("FP_check_fp"),
                                                uiOutput("FP_select_k_features"),
                                                uiOutput("FP_exclude_k_features")
-                                               
-                                               
+
+
                                              ),
                                              tabPanel(
                                                title = "Cross validator",
@@ -212,40 +212,40 @@ ui <- dashboardPage(
                                                       actionButton("DC_scriptize", "generate script from gui configuration"),
                                                       uiOutput("DC_scriptize_error")
                                              )
-                                             
-                                             
-                                             
+
+
+
                                       )),
-                               
-                               
-                               
-                               
-                               
-                               
-                               
-                               
+
+
+
+
+
+
+
+
                                column(width = 6,
                                       uiOutput("DC_ace"),
-                                      
+
                                       actionButton("DC_run_decoding", "Run Decoding"),
-                                      # textinput of filename to be saved if not existing and to be saved as if existing; 
+                                      # textinput of filename to be saved if not existing and to be saved as if existing;
                                       actionButton("DC_save_script", "Save the script")
-                                      
+
                                )
-                               
-                               
+
+
                              )
                            )
-                           
+
                          ),
                          tabPanel(
                            title = "Plot decoding results",
-                           
+
                            column(width = 12,
-                                  #issue cannot make use of the large blank on the right 
+                                  #issue cannot make use of the large blank on the right
                                   tabBox(width = 12,
                                          # title = "Result plot",
-                                         tabPanel("timeplot", 
+                                         tabPanel("timeplot",
                                                   selectInput("Plot_TCT_result_type_to_plot", lLabel$Plot_TCT_result_type_to_plot,
                                                               c("Zero-one loss", "Rank results", "Decision Values")),
                                                   plotOutput("timeplot")
@@ -255,17 +255,17 @@ ui <- dashboardPage(
                                                               c("Zero-one loss", "Rank results", "Decision Values")),
                                                   plotOutput("tct")
                                          )
-                                         
+
                                   )
                            )
                          )
-              ) 
+              )
       )
-      
+
     )
-    
-    
+
+
   )
-  
+
 )
 
