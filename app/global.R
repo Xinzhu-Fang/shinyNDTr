@@ -8,6 +8,12 @@ library('dplyr')
 
 rm(list=ls())
 
+file_rename <- function(from, to) {
+  todir <- dirname(to)
+  if (!isTRUE(file.info(todir)$isdir)) dir.create(todir, recursive=TRUE)
+  file.rename(from = from,  to = to)
+}
+
 # working directoy is initialized as the dir of run file
 # setwd("..")
 setwd("C:/Users/14868/Documents/GitHub/NDTr")
@@ -33,35 +39,37 @@ req_dc_para <- c("CL", "CV_bDiag", "CV_repeat", "CV_resample", "CV_split", "DS_c
 # req_dc_para_basic_leve <- c()
 
 all_input <- list()
-
-input_id <- c("bin_create_raster",
+input_id <- c("DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
               "bin_bin_data", "bin_bin_width", "bin_bPlot", "bin_chosen_raster",
               "bin_end_ind", "bin_next_neuron", "bin_prefix_of_binned_file_name",
               "bin_new_raster",
               "bin_pre_neuron", "bin_raster_end_ind","bin_raster_start_ind",
               "bin_start_ind", "bin_step_size",
-  "bin_uploaded_raster", "CL", "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
+  "bin_uploaded_raster","bin_uploaded_raster_name",
+  "CL", "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
   "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "CV_repeat", "CV_resample",
   "CV_split","DC_chosen_script", "DC_run_decoding", "DC_save_script", "DC_scriptize",
-  "DC_upload", "DS_basic_level_to_use", "DS_basic_var_to_decode", "DS_bUse_all_levels",
+  "DC_uploaded_script","DC_uploaded_script_name", "DS_basic_level_to_use", "DS_basic_var_to_decode", "DS_bUse_all_levels",
   "DS_chosen_bin", "DS_gen_num_training_level_groups", "DS_gen_var_to_decode",
-  "DS_gen_var_to_use", "DS_type", "DS_uploaded_bin", "FP", "FP_excluded_k",
+  "DS_gen_var_to_use", "DS_type", "DS_uploaded_binned", "DS_uploaded_binned_name","FP", "FP_excluded_k",
   "FP_selected_k", "Plot_basic_result_type_to_plot", "Plot_TCT_result_type_to_plot",
   "script", "sidebarCollapsed", "sidebarItemExpanded")
 
 
-input_label <- c("Create raster",
+input_label <- c("Save to disk","Save to disk","Save to disk",
+  "Create raster",
                  "Bin the data", "Bin width", "Plot the data? (only for spike trains in .Rda file)", "Choose raster data directory",
                  "Index of the sample where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD)",
                  "New raster directory name (e.g., data/raster/Zhang_Desimone_7objects_raster_data_rda; by default, we append '_rda' to the matlab raster directory name)",
                  "previous file", "Index of the sample where the new raster data end","Index of the sample where the new raster data begin",
                  "Index of the sample where the first bin starts (optional)", "Step size",
-                 "Upload new raster data (optional)", "Classifier", "Coef0", "Cost", "Degree of polynomial",
+                 "Upload new raster data (optional)", "Where you want this directory to be saved",
+                 "Classifier", "Coef0", "Cost", "Degree of polynomial",
                  "Gamma", "Kernel", "Test only at training times?", "Number of repeats of each level in each CV split", "Number of resampling runs",
                  "Number of cross validation split", "Show an existing script (optional)","Run decoding", "Save the script", "Generate script from gui configuration",
-                 "Upload new script (optional)",  "Levels to use", "Variable to decode and to use", "Use all the levels of this variable?",
+                 "Upload new script (optional)","Where you want this file to be saved", "Levels to use", "Variable to decode and to use", "Use all the levels of this variable?",
                  "Choose your binned data", "How many training level groups you will use?",  "Variable to decode",
-                 "Variable to use", "Type of data source", "Upload new binned data (optional)", "Feature Preprocessors", "exclude top ? features (this will be applied second)",
+                 "Variable to use", "Type of data source", "Upload new binned data (optional)", "Where you want this file to be saved", "Feature Preprocessors", "exclude top ? features (this will be applied second)",
                  "select top ? features (this will be applied first)", "Type of result to plot", "Type of result to plot",
                  NA, NA, NA)
 

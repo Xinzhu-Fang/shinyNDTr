@@ -109,6 +109,15 @@ function(input, output, session) {
     rv$script <- readChar(rv$script_name, file.info(rv$script_name)$size)
   })
 
+  observeEvent(input$DC_save_script_to_disk, {
+
+    print(input$DC_uploaded_script_name)
+    print(input$DC_uploaded_script$datapath)
+    # file_rename()
+
+
+  })
+
   observeEvent(input$bin_bin_data,{
     if(rv$raster_bRda){
       print(input$bin_start_ind)
@@ -139,9 +148,6 @@ function(input, output, session) {
       rv$create_bin_function_run <- temp_call
       eval(parse(text = temp_call))
 
-    } else {
-      print("validate")
-      validate("You haven't chosen the raster data yet!")
     }
 
   })
@@ -295,8 +301,56 @@ function(input, output, session) {
     all_fp[df_cl_fp[,input$CL]>0]
   })
 
+  er_bin_action_error <- eventReactive(input$bin_bin_data,{
+    validate(
+      need(rv$raster_cur_dir_name, "You haven't chosen the raster data yet!")
+    )
 
+    validate(
+      need(rv$raster_bRda||rv$raster_bMat, "We only accept .mat and .Rda format !")
+    )
+  })
 
+  er_DC_save_script_to_disk_error <- eventReactive(input$DC_save_script_to_disk,{
+    validate(
+      need(input$DC_uploaded_script, paste0("Please ", lLabel$DC_uploaded_script, "!")),
+      need(input$DC_uploaded_script_name, paste0("Please tell me ", lLabel$DC_uploaded_script_name))
+    )
+  })
+
+  er_bin_save_raster_to_disk_error <- eventReactive(input$bin_save_raster_to_disk,{
+    validate(
+      need(input$bin_uploaded_raster, paste0("Please ", lLabel$bin_uploaded_raster, "!")),
+      need(input$bin_uploaded_raster_name, paste0("Please tell me ", lLabel$bin_uploaded_raster_name))
+    )
+  })
+
+  er_DS_save_binned_to_disk_error <- eventReactive(input$DS_save_binned_to_disk,{
+    validate(
+      need(input$DS_uploaded_binned, paste0("Please ", lLabel$DS_uploaded_binned, "!")),
+      need(input$DS_uploaded_binned_name, paste0("Please tell me ", lLabel$DS_uploaded_binned_name))
+    )
+  })
+output$bin_action_error = renderUI({
+  er_bin_action_error()
+
+})
+
+output$DC_save_script_to_disk_error = renderUI({
+
+  er_DC_save_script_to_disk_error()
+
+})
+output$bin_save_raster_to_disk_error = renderUI({
+
+  er_bin_save_raster_to_disk_error()
+
+})
+output$DS_save_binned_to_disk_error = renderUI({
+
+  er_DS_save_binned_to_disk_error()
+
+})
   output$where = renderDataTable(input$bin_uploaded_raster)
 
   output$bin_offer_create_raster = renderUI({
