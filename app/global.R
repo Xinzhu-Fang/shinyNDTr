@@ -8,7 +8,7 @@ library('dplyr')
 
 rm(list=ls())
 
-file_rename <- function(from, to) {
+move_file <- function(from, to) {
   todir <- dirname(to)
   if (!isTRUE(file.info(todir)$isdir)) dir.create(todir, recursive=TRUE)
   file.rename(from = from,  to = to)
@@ -63,7 +63,7 @@ input_label <- c("Save to disk","Save to disk","Save to disk",
                  "New raster directory name (e.g., data/raster/Zhang_Desimone_7objects_raster_data_rda; by default, we append '_rda' to the matlab raster directory name)",
                  "previous file", "Index of the sample where the new raster data end","Index of the sample where the new raster data begin",
                  "Index of the sample where the first bin starts (optional)", "Step size",
-                 "Upload new raster data (optional)", "Where you want this directory to be saved",
+                 "Upload a zipped file raster data (optional)", "Where you want the file to be unzipped",
                  "Classifier", "Coef0", "Cost", "Degree of polynomial",
                  "Gamma", "Kernel", "Test only at training times?", "Number of repeats of each level in each CV split", "Number of resampling runs",
                  "Number of cross validation split", "Show an existing script (optional)","Run decoding", "Save the script", "Generate script from gui configuration",

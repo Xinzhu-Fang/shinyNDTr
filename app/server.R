@@ -108,18 +108,47 @@ function(input, output, session) {
     rv$script_name <- temp_df_file$datapath
     rv$script <- readChar(rv$script_name, file.info(rv$script_name)$size)
   })
+
+  # when unzip a file, the new file is unzipped to exdir with origianl name, thus there is no need to update input with chosen file name
+  # observe({
+  #   req(input$bin_uploaded_raster)
+  #   temp_file_name <-input$bin_uploaded_raster$datapath
+  #   print(temp_file_name)
+  #
+  #   updateTextInput(session, "bin_uploaded_raster_name", value = file.path(rv$raster_base_dir, basename(temp_file_name)))
+  # })
+
+  observeEvent(input$bin_save_raster_to_disk, {
+    req(input$bin_uploaded_raster,input$bin_uploaded_raster_name )
+    print(input$bin_uploaded_raster$datapath)
+
+    print(input$bin_uploaded_raster_name)
+    unzip(input$bin_uploaded_raster$datapath, exdir=input$bin_uploaded_raster_name)
+
+
+  })
+  observe({
+    req(input$DS_uploaded_binned)
+    temp_file_name <-input$DS_uploaded_binned$datapath
+    updateTextInput(session, "DS_uploaded_binned_name", value = file.path(rv$binned_base_dir, basename(temp_file_name)))
+  })
+
+  observeEvent(input$DS_save_binned_to_disk, {
+    req(input$DS_uploaded_binned,input$DS_uploaded_binned_name )
+    move_file(input$DS_uploaded_binned$datapath,input$DS_uploaded_binned_name )
+
+
+  })
+
   observe({
     req(input$DC_uploaded_script)
     temp_file_name <-input$DC_uploaded_script$datapath
-    print(temp_file_name)
     updateTextInput(session, "DC_uploaded_script_name", value = file.path(rv$script_base_dir, basename(temp_file_name)))
   })
 
   observeEvent(input$DC_save_script_to_disk, {
 req(input$DC_uploaded_script,input$DC_uploaded_script_name )
-    print(input$DC_uploaded_script_name)
-    print(input$DC_uploaded_script$datapath)
-    file_rename(input$DC_uploaded_script$datapath,input$DC_uploaded_script_name )
+    move_file(input$DC_uploaded_script$datapath,input$DC_uploaded_script_name )
 
 
   })
