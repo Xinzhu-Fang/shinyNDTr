@@ -108,12 +108,18 @@ function(input, output, session) {
     rv$script_name <- temp_df_file$datapath
     rv$script <- readChar(rv$script_name, file.info(rv$script_name)$size)
   })
+  observe({
+    req(input$DC_uploaded_script)
+    temp_file_name <-input$DC_uploaded_script$datapath
+    print(temp_file_name)
+    updateTextInput(session, "DC_uploaded_script_name", value = file.path(rv$script_base_dir, basename(temp_file_name)))
+  })
 
   observeEvent(input$DC_save_script_to_disk, {
-
+req(input$DC_uploaded_script,input$DC_uploaded_script_name )
     print(input$DC_uploaded_script_name)
     print(input$DC_uploaded_script$datapath)
-    # file_rename()
+    file_rename(input$DC_uploaded_script$datapath,input$DC_uploaded_script_name )
 
 
   })
@@ -311,12 +317,6 @@ function(input, output, session) {
     )
   })
 
-  er_DC_save_script_to_disk_error <- eventReactive(input$DC_save_script_to_disk,{
-    validate(
-      need(input$DC_uploaded_script, paste0("Please ", lLabel$DC_uploaded_script, "!")),
-      need(input$DC_uploaded_script_name, paste0("Please tell me ", lLabel$DC_uploaded_script_name))
-    )
-  })
 
   er_bin_save_raster_to_disk_error <- eventReactive(input$bin_save_raster_to_disk,{
     validate(
@@ -331,16 +331,18 @@ function(input, output, session) {
       need(input$DS_uploaded_binned_name, paste0("Please tell me ", lLabel$DS_uploaded_binned_name))
     )
   })
+  er_DC_save_script_to_disk_error <- eventReactive(input$DC_save_script_to_disk,{
+    validate(
+      need(input$DC_uploaded_script, paste0("Please ", lLabel$DC_uploaded_script, "!")),
+      need(input$DC_uploaded_script_name, paste0("Please tell me ", lLabel$DC_uploaded_script_name))
+    )
+  })
+
 output$bin_action_error = renderUI({
   er_bin_action_error()
 
 })
 
-output$DC_save_script_to_disk_error = renderUI({
-
-  er_DC_save_script_to_disk_error()
-
-})
 output$bin_save_raster_to_disk_error = renderUI({
 
   er_bin_save_raster_to_disk_error()
@@ -351,8 +353,42 @@ output$DS_save_binned_to_disk_error = renderUI({
   er_DS_save_binned_to_disk_error()
 
 })
+output$DC_save_script_to_disk_error = renderUI({
+
+  er_DC_save_script_to_disk_error()
+
+})
   output$where = renderDataTable(input$bin_uploaded_raster)
 
+  output$bin_offer_upload_raster = renderUI({
+    list(
+      fileInput("bin_uploaded_raster", lLabel$bin_uploaded_raster, multiple = TRUE),
+
+      textInput("bin_uploaded_raster_name", lLabel$bin_uploaded_raster_name, rv$raster_base_dir),
+      actionButton("bin_save_raster_to_disk", lLabel$bin_save_raster_to_disk),
+      uiOutput("bin_save_raster_to_disk_error")
+    )
+
+
+  })
+
+  output$DS_offer_upload_bin = renderUI({
+    list(
+      fileInput("DS_uploaded_binned", lLabel$DS_uploaded_binned, multiple = TRUE),
+      textInput("DS_uploaded_binned_name", lLabel$DS_uploaded_binned_name, rv$binned_base_dir),                                 actionButton("DS_save_binned_to_disk",lLabel$DS_save_binned_to_disk),
+      uiOutput("DS_save_binned_to_disk_error")
+
+    )
+  })
+
+  output$DC_offer_upload_script = renderUI({
+    list(
+      fileInput("DC_uploaded_script", lLabel$DC_uploaded_script, multiple = TRUE),
+      textInput("DC_uploaded_script_name", lLabel$DC_uploaded_script_name, rv$script_base_dir),
+      actionButton("DC_save_script_to_disk", lLabel$DC_save_script_to_disk),
+      uiOutput("DC_save_script_to_disk_error")
+    )
+    })
   output$bin_offer_create_raster = renderUI({
     req(rv$raster_cur_dir_name)
 

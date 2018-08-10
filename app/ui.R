@@ -19,12 +19,7 @@ ui <- dashboardPage(
                            fluidRow(
                              box(width = NULL,
                                  helpText("We only accept .mat and .Rda format !"),
-                                 fileInput("bin_uploaded_raster", lLabel$bin_uploaded_raster, multiple = TRUE),
-
-                                 textInput("bin_uploaded_raster_name", lLabel$bin_uploaded_raster_name),
-                                 actionButton("bin_save_raster_to_disk", lLabel$bin_save_raster_to_disk),
-                                 uiOutput("bin_save_raster_to_disk_error"),
-
+                      uiOutput("bin_offer_upload_raster"),
                                  shinyFiles::shinyDirButton("bin_chosen_raster", lLabel$bin_chosen_raster, ""),
                                  helpText("Full path of your chosen directory of raster data: "),
 
@@ -128,11 +123,8 @@ ui <- dashboardPage(
                                                title = "Data source",
                                                width = NULL,
                                                solidHeader = TRUE, status = "primary",
-                                               fileInput("DS_uploaded_binned", lLabel$DS_uploaded_binned, multiple = TRUE),
-                                               textInput("DS_uploaded_binned_name", lLabel$DS_uploaded_binned_name),                                 actionButton("DS_save_binned_to_disk",lLabel$DS_save_binned_to_disk),
-uiOutput("DS_save_binned_to_disk_error"),
 
-
+uiOutput("DS_offer_upload_bin"),
                                                shinyFiles::shinyFilesButton("DS_chosen_bin", lLabel$DS_chosen_bin, "", multiple = FALSE),
                                                helpText("Full path of your chosen binned data file: "),
 
@@ -218,10 +210,7 @@ uiOutput("DS_save_binned_to_disk_error"),
                                                checkboxInput("CV_bDiag", lLabel$CV_bDiag,TRUE)
                                              ),
                                              tabPanel("Script",
-                                                      fileInput("DC_uploaded_script", lLabel$DC_uploaded_script, multiple = TRUE),
-                                                      textInput("DC_uploaded_script_name", lLabel$DC_uploaded_script_name),
-                                                      actionButton("DC_save_script_to_disk", lLabel$DC_save_script_to_disk),
-uiOutput("DC_save_script_to_disk_error"),
+                                                      uiOutput("DC_offer_upload_script"),
                                                       # script will show upon chosen
                                                       shinyFiles::shinyFilesButton("DC_chosen_script", lLabel$DC_chosen_script, "", multiple = FALSE),
                                                       helpText("Full path of your chosen script: "),
