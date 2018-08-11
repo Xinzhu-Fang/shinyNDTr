@@ -93,24 +93,12 @@ move_file <- function(from, to) {
 
 create_script <- function(my_decoding_paras, rv) {
 
-  all_my_inputs <<- names(my_decoding_paras)
 
-  my_inputs_global <<- my_decoding_paras
 
   print(names(my_decoding_paras))
 
 
-  script_dir_name <- "scripts"
 
-  script_name <- "decoding_script.Rmd"
-
-
-  script_full_name <- file.path(getwd(),script_dir_name, script_name)
-
-
-  # overwrite the file for now while I'm still figure out how to create it...
-  #file.create(script_full_name, overwrite = TRUE)
-  file.create(script_full_name)
 
   my_text = ""
   # write the header
@@ -124,7 +112,7 @@ create_script <- function(my_decoding_paras, rv) {
   #
 
   # my_text = paste0(my_text, "\n```{r}\n")
-  my_text = paste0(my_text, "binned_data_file_name <-", rv$binned_file_name, "\n")
+  my_text = paste0(my_text, "binned_data_file_name <-", "'",rv$binned_file_name,"'", "\n")
 
 
 
@@ -132,10 +120,10 @@ create_script <- function(my_decoding_paras, rv) {
 
   # my_text = paste0(my_text, "\n```{r}\n")
   if(my_decoding_paras$DS_type == "basic_DS"){
-    my_text = paste0(my_text, "variable_to_decode <-", my_decoding_paras$DS_basic_var_to_decode, "\n")
+    my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n")
     my_text = paste0(my_text, "num_cv_split <- ", my_decoding_paras$CV_split, "\n")
 
-    my_text = paste0(my_text, "ds <- basic_DS$new(binned_file_name, specific_binned_label_name, num_cv_splits)\n")
+    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, specific_binned_label_name, num_cv_splits)\n")
 
   }
   #! need to change this basic_DS
@@ -144,7 +132,7 @@ create_script <- function(my_decoding_paras, rv) {
   }
 
 
-  my_text = paste0(my_text, "cl <- ", my_decoding_paras$CL, "$new()\n")
+  my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n")
 
 
   # my_text = paste0(my_text, "```\n")
@@ -154,36 +142,21 @@ create_script <- function(my_decoding_paras, rv) {
 
   my_text = paste0(my_text, "fps <-list (")
 
-  if(!is.null(my_decoding_paras$FP)){
-    if(grepl(my_decoding_paras$FP, all_fp[2]) == TRUE){
-      my_text = paste0(my_text, my_decoding_paras$FP[2], "$new()")
 
-    } else if (grepl(my_decoding_paras$FP, all_fp[1]) == TRUE){
-      my_text = paste0(my_text, my_decoding_paras$FP[1], "$new(")
-      if(!is.null(my_decoding_paras$FP_selected_k)){
-        my_text = paste0(my_text, "num_sites_to_use = ", my_decoding_paras$FP_selected_k)
-      } else if(is.null(my_decoding_paras$FP_excluded_k)){
-        my_text = paste0(my_text, "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k)
-      }
+  select_k_text = ""
+  norm_text = ""
 
-      if(is.null(my_decoding_paras$FP_excluded_k)){
-        my_text = paste0(my_text, ", num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k)
-      }
-    }
 
-    if(grepl(my_decoding_paras$FP, all_fp[1]) == TRUE){
-      my_text = paste0(my_text, ",", my_decoding_paras$FP[2])
-      if(!is.null(my_decoding_paras$FP_selected_k)){
-        my_text = paste0(my_text, "num_sites_to_use = ", my_decoding_paras$FP_selected_k)
-      } else if(is.null(my_decoding_paras$FP_excluded_k)){
-        my_text = paste0(my_text, "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k)
-      }
+  if(grepl(my_decoding_paras$FP, all_fp[2]) == TRUE){
+    norm_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new()")
 
-      if(is.null(my_decoding_paras$FP_excluded_k)){
-        my_text = paste0(my_text, ", num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k)
-      }
-    }
   }
+
+  if(grepl(my_decoding_paras$FP, all_fp[1]) == TRUE){
+    select_k_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
+  }
+
+  my_text = paste0(my_text,select_k_text, norm_text, ")")
 
   my_text = paste0(my_text, ")\n")
 
@@ -191,7 +164,7 @@ create_script <- function(my_decoding_paras, rv) {
 
   # my_text = paste0(my_text, "\n```{r}\n")
 
-  my_text = paste0(my_text, "cv <- standard_CV$new(ds, cl, fps)\n",
+  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n",
                    "DECODING_RESULTS <- cv$run_decoding()")
 
   # my_text = paste0(my_text, "```\n")

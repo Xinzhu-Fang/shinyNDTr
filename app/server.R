@@ -36,7 +36,7 @@ function(input, output, session) {
   rv$binned_all_var <- NULL
 
   rv$script_base_dir <- script_base_dir
-  rv$script_name <- NULL
+  rv$chosen_script_name <- NULL
   rv$script <- NULL
   # only files meet specified files types will be shown. However, such dir shown as empty can still be choosed
   shinyFiles::shinyDirChoose(input, "bin_chosen_raster", roots = c(wd=raster_base_dir), filetypes = c("mat", "Rda"))
@@ -95,7 +95,8 @@ function(input, output, session) {
 
     load(rv$binned_file_name)
     rv$binned_data <- binned_data
-    rv$binned_maximum_num_of_levels_in_all_var <- max(apply(select(binned_data, starts_with("labels"))[,],2, function(x) length(levels(as.factor(x)))))
+    rv$binned_maximum_num_of_levels_in_all_var <-
+      max(apply(select(binned_data, starts_with("labels"))[,],2, function(x) length(levels(as.factor(x)))))
     rv$binned_all_var <- sub("labels.", "", names(select(binned_data, starts_with("labels"))))
 
   })
@@ -105,8 +106,9 @@ function(input, output, session) {
     temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$script_base_dir),input$DC_chosen_script)
     print(temp_df_file)
     req(temp_df_file$datapath)
-    rv$script_name <- temp_df_file$datapath
-    rv$script <- readChar(rv$script_name, file.info(rv$script_name)$size)
+    rv$chosen_script_name <- temp_df_file$datapath
+    rv$script <- readChar(rv$chosen_script_name, file.info(rv$chosen_script_name)$size)
+    updateTextInput(session, "DC_displayed_script_name", value = rv$chosen_script_name)
   })
 
   # when unzip a file, the new file is unzipped to exdir with origianl name, thus there is no need to update input with chosen file name
@@ -144,17 +146,23 @@ function(input, output, session) {
   })
 
   observeEvent(input$DC_save_script_to_disk, {
-req(input$DC_uploaded_script,input$DC_uploaded_script_name )
+    req(input$DC_uploaded_script,input$DC_uploaded_script_name )
     move_file(input$DC_uploaded_script$datapath,input$DC_uploaded_script_name )
 
 
   })
-  observeEvent(input$DC_save_displayed_script,{
 
+
+  observeEvent(input$DC_save_displayed_script,{
+    req(input$DC_displayed_script_name, rv$script)
+    file.create(input$DC_displayed_script_name, overwrite = TRUE)
+    write(rv$script, file = input$DC_displayed_script_name)
   })
 
-  output$DC_displayed_script_name = renderUI({
-    textInput("")
+  observeEvent(input$DC_run_decoding, {
+    req(rv$script)
+
+    eval(parse(text = rv$script))
   })
   observeEvent(input$bin_bin_data,{
     if(rv$raster_bRda){
@@ -210,74 +218,74 @@ req(input$DC_uploaded_script,input$DC_uploaded_script_name )
 
 
 
-rv_para <- reactiveValues()
-rv_para$id <-  c("DS_chosen_bin", "DS_type","CL", "CV_repeat", "CV_resample","CV_split")
+  rv_para <- reactiveValues()
+  rv_para$id <-  c("DS_chosen_bin", "DS_type","CL", "CV_repeat", "CV_resample","CV_split")
 
 
 
 
-observeEvent(input$DC_scriptize,{
- # oberveEvent is executed before eventReactive
-  if(input$DS_type == "basic_DS"){
-    rv_para$id <- c(rv_para$id,"DS_basic_var_to_decode")
-    if(!input$DS_bUse_all_levels){
-      rv_para$id <- c(rv_para$id,  "DS_basic_level_to_use")
+  observeEvent(input$DC_scriptize,{
+    # oberveEvent is executed before eventReactive
+    if(input$DS_type == "basic_DS"){
+      rv_para$id <- c(rv_para$id,"DS_basic_var_to_decode")
+      if(!input$DS_bUse_all_levels){
+        rv_para$id <- c(rv_para$id,  "DS_basic_level_to_use")
+      }
+    } else{
+      rv_para$id <- c(rv_para$id,"DS_gen_var_to_use","DS_gen_var_to_decode", "DS_gen_num_training_level_groups")
     }
-  } else{
-    rv_para$id <- c(rv_para$id,"DS_gen_var_to_use","DS_gen_var_to_decode", "DS_gen_num_training_level_groups")
-  }
 
 
-  rv_para$inputID <- paste0("input$", rv_para$id)
+    rv_para$inputID <- paste0("input$", rv_para$id)
 
-  eval(parse(text = paste0("req(", rv_para$inputID, ")")))
+    eval(parse(text = paste0("req(", rv_para$inputID, ")")))
 
-  rv_para$id_of_useful_paras <- c(rv_para$id, "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
-                                  "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "DS_bUse_all_levels","FP", "FP_excluded_k",
-                                  "FP_selected_k")
+    rv_para$id_of_useful_paras <- c(rv_para$id, "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
+                                    "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "DS_bUse_all_levels","FP", "FP_excluded_k",
+                                    "FP_selected_k")
 
-  if(!is.null(input$DS_gen_num_training_level_groups)){
-    temp_training_level_groups <- paste0("input$DS_training_level_group_", c(1:input$DS_gen_num_training_level_groups))
-    temp_testing_level_groups <- paste0("input$DS_testing_level_group_", c(1:input$DS_gen_num_testing_level_groups))
-    rv_para$id_of_useful_paras <- c(rv_para$id_of_useful_paras, trainin_level_groups, testing_level_groups)
-  }
-  rv_para$inputID_of_useful_paras <- paste0("input$", rv_para$id_of_useful_paras)
+    if(!is.null(input$DS_gen_num_training_level_groups)){
+      temp_training_level_groups <- paste0("input$DS_training_level_group_", c(1:input$DS_gen_num_training_level_groups))
+      temp_testing_level_groups <- paste0("input$DS_testing_level_group_", c(1:input$DS_gen_num_testing_level_groups))
+      rv_para$id_of_useful_paras <- c(rv_para$id_of_useful_paras, trainin_level_groups, testing_level_groups)
+    }
+    rv_para$inputID_of_useful_paras <- paste0("input$", rv_para$id_of_useful_paras)
 
-  rv_para$values <- lapply(rv_para$inputID_of_useful_paras, function(i){
-    eval(parse(text = i))
+    rv_para$values <- lapply(rv_para$inputID_of_useful_paras, function(i){
+      eval(parse(text = i))
+    })
+
+
+    print(rv_para$values)
+    lDecoding_paras <<- as.list(rv_para$values)
+    lDecoding_paras <<- setNames(lDecoding_paras, rv_para$id_of_useful_paras)
+
+    print(lDecoding_paras)
+    print(lDecoding_paras$CL)
+
+    rv$script <- create_script(lDecoding_paras, rv)
+
   })
 
 
-  print(rv_para$values)
-  lDecoding_paras <<- as.list(rv_para$values)
-  lDecoding_paras <<- setNames(lDecoding_paras, rv_para$id_of_useful_paras)
-
-  print(lDecoding_paras)
-  print(lDecoding_paras$CL)
-
-  rv$script <- create_script(lDecoding_paras, rv)
-
-})
+  er_scriptize_action_error <- eventReactive(input$DC_scriptize,{
 
 
-er_scriptize_action_error <- eventReactive(input$DC_scriptize,{
+    # my_decoding_paras <<- paste0("my_",decoding_paras)
+
+    temp_need = lapply(rv_para$id, function(i){
+      eval(parse(text = paste0("need(input$", i, ", '", "You need to set ",eval(parse(text = paste0("lLabels$", i))), "')")))
+    })
 
 
-  # my_decoding_paras <<- paste0("my_",decoding_paras)
+    do.call(validate, temp_need)
 
-  temp_need = lapply(rv_para$id, function(i){
-    eval(parse(text = paste0("need(input$", i, ", '", "You need to set ",eval(parse(text = paste0("lLabels$", i))), "')")))
+
   })
+  output$DC_scriptize_error <- renderText({
+    er_scriptize_action_error()
 
-
-  do.call(validate, temp_need)
-
-
-})
-output$DC_scriptize_error <- renderText({
-  er_scriptize_action_error()
-
-})
+  })
 
   observeEvent(input$DC_run_decoding,{
     eval(parse(text = rv$script))
@@ -390,28 +398,48 @@ output$DC_scriptize_error <- renderText({
       need(input$DC_uploaded_script_name, paste0("Please tell me ", lLabels$DC_uploaded_script_name))
     )
   })
+  er_DC_save_displayed_script_error <- eventReactive(input$DC_save_displayed_script,{
+    validate(
+      need(rv$script,"Please generate the script first !"),
+      need(input$DC_displayed_script_name, paste0("Please tell me ",lLabels$DC_displayed_script_name))
+    )
+  })
 
-output$bin_action_error = renderUI({
-  er_bin_action_error()
+  er_DC_run_decoding_error <- eventReactive(input$DC_run_decoding, {
+    validate(need(rv$script,"Please generate the script first !"))
+  })
+  output$bin_action_error = renderUI({
+    er_bin_action_error()
 
-})
+  })
 
-output$bin_save_raster_to_disk_error = renderUI({
+  output$bin_save_raster_to_disk_error = renderUI({
 
-  er_bin_save_raster_to_disk_error()
+    er_bin_save_raster_to_disk_error()
 
-})
-output$DS_save_binned_to_disk_error = renderUI({
+  })
+  output$DS_save_binned_to_disk_error = renderUI({
 
-  er_DS_save_binned_to_disk_error()
+    er_DS_save_binned_to_disk_error()
 
-})
-output$DC_save_script_to_disk_error = renderUI({
+  })
+  output$DC_save_script_to_disk_error = renderUI({
 
-  er_DC_save_script_to_disk_error()
+    er_DC_save_script_to_disk_error()
 
-})
+  })
+
+  output$DC_save_displayed_script_error = renderUI({
+    er_DC_save_displayed_script_error()
+  })
+
+
+  output$DC_run_decoding_error = renderUI({
+    er_DC_run_decoding_error()
+  })
   output$where = renderDataTable(input$bin_uploaded_raster)
+
+
 
   output$bin_offer_upload_raster = renderUI({
     list(
@@ -428,7 +456,8 @@ output$DC_save_script_to_disk_error = renderUI({
   output$DS_offer_upload_bin = renderUI({
     list(
       fileInput("DS_uploaded_binned", lLabels$DS_uploaded_binned, multiple = TRUE),
-      textInput("DS_uploaded_binned_name", lLabels$DS_uploaded_binned_name, rv$binned_base_dir),                                 actionButton("DS_save_binned_to_disk",lLabels$DS_save_binned_to_disk),
+      textInput("DS_uploaded_binned_name", lLabels$DS_uploaded_binned_name, rv$binned_base_dir),
+      actionButton("DS_save_binned_to_disk",lLabels$DS_save_binned_to_disk),
       uiOutput("DS_save_binned_to_disk_error")
 
     )
@@ -441,7 +470,24 @@ output$DC_save_script_to_disk_error = renderUI({
       actionButton("DC_save_script_to_disk", lLabels$DC_save_script_to_disk),
       uiOutput("DC_save_script_to_disk_error")
     )
-    })
+  })
+
+  output$DC_offer_save_displayed_script = renderUI({
+    list(
+      textInput("DC_displayed_script_name", lLabels$DC_displayed_script_name, rv$script_base_dir),
+      actionButton("DC_save_displayed_script", "Save the script"),
+      uiOutput("DC_save_displayed_script_error")
+    )
+  })
+
+
+  output$DC_offer_run_decoding = renderUI({
+    list(
+      actionButton("DC_run_decoding", lLabels$DC_run_decoding),
+      uiOutput("DC_run_decoding_error")
+    )
+  })
+
   output$bin_offer_create_raster = renderUI({
     req(rv$raster_cur_dir_name)
 
@@ -648,7 +694,7 @@ output$DC_save_script_to_disk_error = renderUI({
   })
 
   output$DC_show_chosen_script = renderText({
-    rv$script_name
+    rv$chosen_script_name
   })
 
   output$DC_ace = renderUI({

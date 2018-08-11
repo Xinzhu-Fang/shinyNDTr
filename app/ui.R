@@ -236,10 +236,10 @@ uiOutput("DS_offer_upload_bin"),
                                           height = NULL,
 
                                           uiOutput("DC_ace"),
+                                          uiOutput("DC_offer_run_decoding"),
 
-                                          actionButton("DC_run_decoding", "Run Decoding"),
                                           # textinput of filename to be saved if not existing and to be saved as if existing;
-                                          actionButton("DC_save_displayed_script", "Save the script")
+                                          uiOutput("DC_offer_save_displayed_script")
                                           )
 
 
