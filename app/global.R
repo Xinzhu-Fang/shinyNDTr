@@ -35,7 +35,7 @@ req_dc_para <- c("CL", "CV_bDiag", "CV_repeat", "CV_resample", "CV_split", "DS_c
 # req_dc_para_basic_leve <- c()
 
 all_input <- list()
-input_id <- c("DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
+input_id <- c("DC_displayed_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
               "bin_bin_data", "bin_bin_width", "bin_bPlot", "bin_chosen_raster",
               "bin_end_ind", "bin_next_neuron", "bin_prefix_of_binned_file_name",
               "bin_new_raster",
@@ -44,7 +44,7 @@ input_id <- c("DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster
   "bin_uploaded_raster","bin_uploaded_raster_name",
   "CL", "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
   "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "CV_repeat", "CV_resample",
-  "CV_split","DC_chosen_script", "DC_run_decoding", "DC_save_script", "DC_scriptize",
+  "CV_split","DC_chosen_script", "DC_run_decoding", "DC_save_displayed_script", "DC_scriptize",
   "DC_uploaded_script","DC_uploaded_script_name", "DS_basic_level_to_use", "DS_basic_var_to_decode", "DS_bUse_all_levels",
   "DS_chosen_bin", "DS_gen_num_training_level_groups", "DS_gen_var_to_decode",
   "DS_gen_var_to_use", "DS_type", "DS_uploaded_binned", "DS_uploaded_binned_name","FP", "FP_excluded_k",
@@ -52,7 +52,7 @@ input_id <- c("DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster
   "script", "sidebarCollapsed", "sidebarItemExpanded")
 
 
-input_label <- c("Save to disk","Save to disk","Save to disk",
+input_label <- c("Where you want the displayed script to be saved", "Save to disk","Save to disk","Save to disk",
   "Create raster",
                  "Bin the data", "Bin width", "Plot the data? (only for spike trains in .Rda file)", "Choose raster data directory",
                  "Index of the sample where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD)",
@@ -91,7 +91,7 @@ move_file <- function(from, to) {
 }
 
 
-create_script <- function(my_decoding_paras, my_rv) {
+create_script <- function(my_decoding_paras, rv) {
 
   all_my_inputs <<- names(my_decoding_paras)
 
@@ -124,20 +124,20 @@ create_script <- function(my_decoding_paras, my_rv) {
   #
 
   # my_text = paste0(my_text, "\n```{r}\n")
+  my_text = paste0(my_text, "binned_data_file_name <-", rv$binned_file_name, "\n")
 
 
+
+  # my_text = paste0(my_text, "```\n")
+
+  # my_text = paste0(my_text, "\n```{r}\n")
   if(my_decoding_paras$DS_type == "basic_DS"){
-    my_text = paste0(my_text, "binned_data_file_name <-", my_decoding_paras$DS_chosen_bin, "\n")
     my_text = paste0(my_text, "variable_to_decode <-", my_decoding_paras$DS_basic_var_to_decode, "\n")
     my_text = paste0(my_text, "num_cv_split <- ", my_decoding_paras$CV_split, "\n")
 
     my_text = paste0(my_text, "ds <- basic_DS$new(binned_file_name, specific_binned_label_name, num_cv_splits)\n")
 
   }
-  # my_text = paste0(my_text, "```\n")
-
-  # my_text = paste0(my_text, "\n```{r}\n")
-
   #! need to change this basic_DS
   if(!is.null(my_decoding_paras$CV_repeat)){
     my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")

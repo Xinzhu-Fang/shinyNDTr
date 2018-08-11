@@ -149,7 +149,13 @@ req(input$DC_uploaded_script,input$DC_uploaded_script_name )
 
 
   })
+  observeEvent(input$DC_save_displayed_script,{
 
+  })
+
+  output$DC_displayed_script_name = renderUI({
+    textInput("")
+  })
   observeEvent(input$bin_bin_data,{
     if(rv$raster_bRda){
       print(input$bin_start_ind)
@@ -235,19 +241,24 @@ observeEvent(input$DC_scriptize,{
     temp_testing_level_groups <- paste0("input$DS_testing_level_group_", c(1:input$DS_gen_num_testing_level_groups))
     rv_para$id_of_useful_paras <- c(rv_para$id_of_useful_paras, trainin_level_groups, testing_level_groups)
   }
+  rv_para$inputID_of_useful_paras <- paste0("input$", rv_para$id_of_useful_paras)
 
-  rv_para$values <- lapply(rv_para$inputID, function(i){
+  rv_para$values <- lapply(rv_para$inputID_of_useful_paras, function(i){
     eval(parse(text = i))
   })
-  rv$script <- create_script(lDecoding_paras, rv)
+
 
   print(rv_para$values)
   lDecoding_paras <<- as.list(rv_para$values)
-  lDecoding_paras <<- setNames(lDecoding_paras, rv_para$id)
+  lDecoding_paras <<- setNames(lDecoding_paras, rv_para$id_of_useful_paras)
 
   print(lDecoding_paras)
   print(lDecoding_paras$CL)
+
+  rv$script <- create_script(lDecoding_paras, rv)
+
 })
+
 
 er_scriptize_action_error <- eventReactive(input$DC_scriptize,{
 
@@ -266,10 +277,6 @@ er_scriptize_action_error <- eventReactive(input$DC_scriptize,{
 output$DC_scriptize_error <- renderText({
   er_scriptize_action_error()
 
-  # do.call(validate, temp_need)
-  # eval(parse(text = temp_val))
-  rv$script <- create_script(input)
-  print(rv$script)
 })
 
   observeEvent(input$DC_run_decoding,{
