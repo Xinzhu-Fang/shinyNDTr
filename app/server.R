@@ -120,9 +120,6 @@ function(input, output, session) {
 
   observeEvent(input$bin_save_raster_to_disk, {
     req(input$bin_uploaded_raster,input$bin_uploaded_raster_name )
-    print(input$bin_uploaded_raster$datapath)
-
-    print(input$bin_uploaded_raster_name)
     unzip(input$bin_uploaded_raster$datapath, exdir=input$bin_uploaded_raster_name)
 
 
@@ -203,54 +200,77 @@ req(input$DC_uploaded_script,input$DC_uploaded_script_name )
 
 
   })
-  observeEvent(input$DC_scriptize,{
-    temp_decoding_paras_id <<- c("CL", "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
-                                 "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "CV_repeat", "CV_resample",
-                                 "CV_split", "CV_repeat", "CV_resample", "CV_split", "DS_basic_level_to_use", "DS_basic_var_to_decode", "DS_bUse_all_levels",
-                                 "DS_chosen_bin", "DS_gen_num_training_level_groups", "DS_gen_var_to_decode",
-                                 "DS_gen_var_to_use", "DS_type","FP", "FP_excluded_k",
-                                 "FP_selected_k")
-    if(!is.null(input$DS_gen_num_training_level_groups)){
-      temp_training_level_groups <<- paste0("input$DS_training_level_group_", c(1:input$DS_gen_num_training_level_groups))
-      temp_testing_level_groups <<- paste0("input$DS_testing_level_group_", c(1:input$DS_gen_num_testing_level_groups))
-      temp_decoding_paras_id <<- c(temp_decoding_paras_id, trainin_level_groups, testing_level_groups)
+
+
+
+
+rv_para <- reactiveValues()
+rv_para$id <-  c("DS_chosen_bin", "DS_type","CL", "CV_repeat", "CV_resample","CV_split")
+
+
+
+
+observeEvent(input$DC_scriptize,{
+ # oberveEvent is executed before eventReactive
+  if(input$DS_type == "basic_DS"){
+    rv_para$id <- c(rv_para$id,"DS_basic_var_to_decode")
+    if(!input$DS_bUse_all_levels){
+      rv_para$id <- c(rv_para$id,  "DS_basic_level_to_use")
     }
+  } else{
+    rv_para$id <- c(rv_para$id,"DS_gen_var_to_use","DS_gen_var_to_decode", "DS_gen_num_training_level_groups")
+  }
 
 
-    # my_decoding_paras <<- paste0("my_",decoding_paras)
-    # all_input <<- names(input)
+  rv_para$inputID <- paste0("input$", rv_para$id)
 
-    #   temp_need = lapply(req_dc_para, function(i){
-    #     print(eval(parse(text = paste0("!is.null(input$",i,")"))))
-    #     # when needed thing exist, it returns NULL
-    #     # https://github.com/rstudio/shiny/blob/master/R/utils.R
-    #     eval(parse(text = paste0("need(!is.null(input$",i,"),'bang')")))
-    #   })
-    #
-    #   output$DC_scriptize_error <- renderText({
-    #     # do.call(validate, temp_need)
-    #     # eval(parse(text = temp_val))
-    #     rv$script <- create_script(input)
-    #     print(rv$script)
-    #   })
-    #
-    #   # do.call(validate, temp)
-    #
-    temp_decoding_paras <- lapply(temp_decoding_paras_input_id, function(i){
-      eval(parse(text = i))
-    })
+  eval(parse(text = paste0("req(", rv_para$inputID, ")")))
 
-    print(temp_decoding_paras)
-    lDecoding_paras <<- as.list(temp_decoding_paras)
-    lDecoding_paras <<- setNames(lDecoding_paras, temp_decoding_paras_id)
+  rv_para$id_of_useful_paras <- c(rv_para$id, "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
+                                  "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "DS_bUse_all_levels","FP", "FP_excluded_k",
+                                  "FP_selected_k")
 
-    print(lDecoding_paras)
-    print(lDecoding_paras$CL)
-    rv$script <- create_script(lDecoding_paras)
+  if(!is.null(input$DS_gen_num_training_level_groups)){
+    temp_training_level_groups <- paste0("input$DS_training_level_group_", c(1:input$DS_gen_num_training_level_groups))
+    temp_testing_level_groups <- paste0("input$DS_testing_level_group_", c(1:input$DS_gen_num_testing_level_groups))
+    rv_para$id_of_useful_paras <- c(rv_para$id_of_useful_paras, trainin_level_groups, testing_level_groups)
+  }
 
+  rv_para$values <- lapply(rv_para$inputID, function(i){
+    eval(parse(text = i))
+  })
+  rv$script <- create_script(lDecoding_paras, rv)
+
+  print(rv_para$values)
+  lDecoding_paras <<- as.list(rv_para$values)
+  lDecoding_paras <<- setNames(lDecoding_paras, rv_para$id)
+
+  print(lDecoding_paras)
+  print(lDecoding_paras$CL)
+})
+
+er_scriptize_action_error <- eventReactive(input$DC_scriptize,{
+
+
+  # my_decoding_paras <<- paste0("my_",decoding_paras)
+
+  temp_need = lapply(rv_para$id, function(i){
+    eval(parse(text = paste0("need(input$", i, ", '", "You need to set ",eval(parse(text = paste0("lLabels$", i))), "')")))
   })
 
 
+  do.call(validate, temp_need)
+
+
+})
+output$DC_scriptize_error <- renderText({
+  er_scriptize_action_error()
+
+  # do.call(validate, temp_need)
+  # eval(parse(text = temp_val))
+  rv$script <- create_script(input)
+  print(rv$script)
+})
 
   observeEvent(input$DC_run_decoding,{
     eval(parse(text = rv$script))
@@ -290,7 +310,6 @@ req(input$DC_uploaded_script,input$DC_uploaded_script_name )
   })
 
   reactive_bin_num_neuron <- reactive({
-    req(rv$binned_file_name)
 
     # this error message doesn't show up now since datasource is on the first tab and DS is selected. I keep it here
     # as an example of using validate
@@ -309,7 +328,6 @@ req(input$DC_uploaded_script,input$DC_uploaded_script_name )
   reactive_all_levels_of_basic_var_to_decode <- reactive({
     req(rv$binned_file_name)
 
-    # if(!is.null(input$DS_chosen_bin)){
 
     binned_data = rv$binned_data
     print(head(binned_data))
@@ -320,7 +338,6 @@ req(input$DC_uploaded_script,input$DC_uploaded_script_name )
   })
 
   reactive_all_levels_of_gen_var_to_use <- reactive({
-    # if(!is.null(input$DS_chosen_bin)){
     req(rv$binned_file_name)
 
     binned_data = rv$binned_data
@@ -349,21 +366,21 @@ req(input$DC_uploaded_script,input$DC_uploaded_script_name )
 
   er_bin_save_raster_to_disk_error <- eventReactive(input$bin_save_raster_to_disk,{
     validate(
-      need(input$bin_uploaded_raster, paste0("Please ", lLabel$bin_uploaded_raster, "!")),
-      need(input$bin_uploaded_raster_name, paste0("Please tell me ", lLabel$bin_uploaded_raster_name))
+      need(input$bin_uploaded_raster, paste0("Please ", lLabels$bin_uploaded_raster, "!")),
+      need(input$bin_uploaded_raster_name, paste0("Please tell me ", lLabels$bin_uploaded_raster_name))
     )
   })
 
   er_DS_save_binned_to_disk_error <- eventReactive(input$DS_save_binned_to_disk,{
     validate(
-      need(input$DS_uploaded_binned, paste0("Please ", lLabel$DS_uploaded_binned, "!")),
-      need(input$DS_uploaded_binned_name, paste0("Please tell me ", lLabel$DS_uploaded_binned_name))
+      need(input$DS_uploaded_binned, paste0("Please ", lLabels$DS_uploaded_binned, "!")),
+      need(input$DS_uploaded_binned_name, paste0("Please tell me ", lLabels$DS_uploaded_binned_name))
     )
   })
   er_DC_save_script_to_disk_error <- eventReactive(input$DC_save_script_to_disk,{
     validate(
-      need(input$DC_uploaded_script, paste0("Please ", lLabel$DC_uploaded_script, "!")),
-      need(input$DC_uploaded_script_name, paste0("Please tell me ", lLabel$DC_uploaded_script_name))
+      need(input$DC_uploaded_script, paste0("Please ", lLabels$DC_uploaded_script, "!")),
+      need(input$DC_uploaded_script_name, paste0("Please tell me ", lLabels$DC_uploaded_script_name))
     )
   })
 
@@ -391,10 +408,10 @@ output$DC_save_script_to_disk_error = renderUI({
 
   output$bin_offer_upload_raster = renderUI({
     list(
-      fileInput("bin_uploaded_raster", lLabel$bin_uploaded_raster, multiple = TRUE),
+      fileInput("bin_uploaded_raster", lLabels$bin_uploaded_raster, multiple = TRUE),
 
-      textInput("bin_uploaded_raster_name", lLabel$bin_uploaded_raster_name, rv$raster_base_dir),
-      actionButton("bin_save_raster_to_disk", lLabel$bin_save_raster_to_disk),
+      textInput("bin_uploaded_raster_name", lLabels$bin_uploaded_raster_name, rv$raster_base_dir),
+      actionButton("bin_save_raster_to_disk", lLabels$bin_save_raster_to_disk),
       uiOutput("bin_save_raster_to_disk_error")
     )
 
@@ -403,8 +420,8 @@ output$DC_save_script_to_disk_error = renderUI({
 
   output$DS_offer_upload_bin = renderUI({
     list(
-      fileInput("DS_uploaded_binned", lLabel$DS_uploaded_binned, multiple = TRUE),
-      textInput("DS_uploaded_binned_name", lLabel$DS_uploaded_binned_name, rv$binned_base_dir),                                 actionButton("DS_save_binned_to_disk",lLabel$DS_save_binned_to_disk),
+      fileInput("DS_uploaded_binned", lLabels$DS_uploaded_binned, multiple = TRUE),
+      textInput("DS_uploaded_binned_name", lLabels$DS_uploaded_binned_name, rv$binned_base_dir),                                 actionButton("DS_save_binned_to_disk",lLabels$DS_save_binned_to_disk),
       uiOutput("DS_save_binned_to_disk_error")
 
     )
@@ -412,9 +429,9 @@ output$DC_save_script_to_disk_error = renderUI({
 
   output$DC_offer_upload_script = renderUI({
     list(
-      fileInput("DC_uploaded_script", lLabel$DC_uploaded_script, multiple = TRUE),
-      textInput("DC_uploaded_script_name", lLabel$DC_uploaded_script_name, rv$script_base_dir),
-      actionButton("DC_save_script_to_disk", lLabel$DC_save_script_to_disk),
+      fileInput("DC_uploaded_script", lLabels$DC_uploaded_script, multiple = TRUE),
+      textInput("DC_uploaded_script_name", lLabels$DC_uploaded_script_name, rv$script_base_dir),
+      actionButton("DC_save_script_to_disk", lLabels$DC_save_script_to_disk),
       uiOutput("DC_save_script_to_disk_error")
     )
     })
@@ -424,7 +441,7 @@ output$DC_save_script_to_disk_error = renderUI({
 
     # req(input$bin_chosen_raster)
     if(rv$raster_bMat){
-      # checkboxInput("bin_bCreate_raster_in_rda",lLabel$bin_bCreate_raster_in_rda)
+      # checkboxInput("bin_bCreate_raster_in_rda",lLabels$bin_bCreate_raster_in_rda)
       temp_matlab_raster_dir_name <- rv$raster_cur_dir_name
       # if the directory name ends with _mat, remove _mat
       temp_non_desired_pattern = '.*_mat$'
@@ -439,11 +456,11 @@ output$DC_save_script_to_disk_error = renderUI({
         helpText(paste0("We can bin raster data in .mat format, but do you want to create raster data in .Rda format? ",
                         "Benefits include the option to plot raster data ")),
 
-        textInput("bin_new_raster", lLabel$bin_new_raster, temp_r_raster_dir_name),
-        numericInput("bin_raster_start_ind", lLabel$bin_raster_start_ind, value = NULL),
-        numericInput("bin_raster_end_ind", lLabel$bin_raster_end_ind, value = NULL),
+        textInput("bin_new_raster", lLabels$bin_new_raster, temp_r_raster_dir_name),
+        numericInput("bin_raster_start_ind", lLabels$bin_raster_start_ind, value = NULL),
+        numericInput("bin_raster_end_ind", lLabels$bin_raster_end_ind, value = NULL),
 
-        actionButton("bin_create_raster", lLabel$bin_create_raster))
+        actionButton("bin_create_raster", lLabels$bin_create_raster))
     }
   })
 
@@ -504,7 +521,7 @@ output$DC_save_script_to_disk_error = renderUI({
     req(rv$binned_file_name)
 
     selectInput("DS_basic_var_to_decode",
-                lLabel$DS_basic_var_to_decode,
+                lLabels$DS_basic_var_to_decode,
                 rv$binned_all_var
                 # c("")
 
@@ -516,7 +533,7 @@ output$DC_save_script_to_disk_error = renderUI({
     req(rv$binned_file_name)
 
     selectInput("DS_gen_var_to_decode",
-                lLabel$DS_gen_var_to_decode,
+                lLabels$DS_gen_var_to_decode,
                 rv$binned_all_var
                 # c("")
 
@@ -525,10 +542,9 @@ output$DC_save_script_to_disk_error = renderUI({
   })
 
   output$DS_basic_list_of_levels_to_use = renderUI({
-    # load(paste0('data/binned/', input$DS_chosen_bin))
 
     selectInput("DS_basic_level_to_use",
-                lLabel$DS_basic_level_to_use,
+                lLabels$DS_basic_level_to_use,
                 reactive_all_levels_of_basic_var_to_decode(),
                 multiple = TRUE)
 
@@ -538,7 +554,7 @@ output$DC_save_script_to_disk_error = renderUI({
     req(rv$binned_file_name)
 
     selectInput("DS_gen_var_to_use",
-                lLabel$DS_gen_var_to_use,
+                lLabels$DS_gen_var_to_use,
                 rv$binned_all_var)
   })
 
@@ -547,7 +563,7 @@ output$DC_save_script_to_disk_error = renderUI({
 
     temp_max <- rv$binned_maximum_num_of_levels_in_all_var
     numericInput("DS_gen_num_training_level_groups",
-                 lLabel$DS_gen_num_training_level_groups,
+                 lLabels$DS_gen_num_training_level_groups,
                  1,
                  min = 1,
                  max  = temp_max)
@@ -591,7 +607,7 @@ output$DC_save_script_to_disk_error = renderUI({
 
   output$FP_check_fp = renderUI({
     checkboxGroupInput("FP",
-                       lLabel$FP,
+                       lLabels$FP,
                        reactive_all_fp_avail()
     )
   }
@@ -602,7 +618,7 @@ output$DC_save_script_to_disk_error = renderUI({
     if(sum(grepl(all_fp[1], input$FP))){
       print("FP")
       numericInput("FP_selected_k",
-                   lLabel$FP_selected_k,
+                   lLabels$FP_selected_k,
                    reactive_bin_num_neuron(),
                    min = 1,
                    max = reactive_bin_num_neuron())
@@ -618,7 +634,7 @@ output$DC_save_script_to_disk_error = renderUI({
 
     req(input$FP_selected_k)
     numericInput("FP_excluded_k",
-                 lLabel$FP_excluded_k,
+                 lLabels$FP_excluded_k,
                  0,
                  min = 1,
                  max = reactive_bin_num_neuron() - input$FP_selected_k)

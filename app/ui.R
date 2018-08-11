@@ -4,7 +4,7 @@ ui <- dashboardPage(
   dashboardHeader(title = "NDTr"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Bining the raster data", tabName = "bin"),
+      menuItem("binning the raster data", tabName = "bin"),
       menuItem("Population Decoding", tabName = "decode")#,
       # menuItem("Single Neuron Analysis", tabName = "single")
 
@@ -20,7 +20,7 @@ ui <- dashboardPage(
                              box(width = NULL,
                                  helpText("We only accept .mat and .Rda format !"),
                       uiOutput("bin_offer_upload_raster"),
-                                 shinyFiles::shinyDirButton("bin_chosen_raster", lLabel$bin_chosen_raster, ""),
+                                 shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, ""),
                                  helpText("Full path of your chosen directory of raster data: "),
 
                                  textOutput("bin_show_chosen_raster"),
@@ -41,12 +41,12 @@ ui <- dashboardPage(
                              fluidRow(
                                column(width = 8,
                                       box(width = NULL,
-                                          numericInput("bin_bin_width", lLabel$bin_bin_width, value = 10, min = 1),
-                                          numericInput("bin_step_size", lLabel$bin_step_size, value = 1, min = 1),
-                                          numericInput("bin_start_ind", lLabel$bin_start_ind, value = NULL),
-                                          numericInput("bin_end_ind", lLabel$bin_end_ind, value = NULL),
-                                          textInput("bin_prefix_of_binned_file_name", lLabel$bin_prefix_of_binned_file_name),
-                                          actionButton("bin_bin_data", lLabel$bin_bin_data),
+                                          numericInput("bin_bin_width", lLabels$bin_bin_width, value = 10, min = 1),
+                                          numericInput("bin_step_size", lLabels$bin_step_size, value = 1, min = 1),
+                                          numericInput("bin_start_ind", lLabels$bin_start_ind, value = NULL),
+                                          numericInput("bin_end_ind", lLabels$bin_end_ind, value = NULL),
+                                          textInput("bin_prefix_of_binned_file_name", lLabels$bin_prefix_of_binned_file_name),
+                                          actionButton("bin_bin_data", lLabels$bin_bin_data),
                                           uiOutput("bin_action_error"),
                                           textOutput("bin_show_create_bin_function_run")                                      )
 
@@ -66,10 +66,10 @@ ui <- dashboardPage(
                                column(width = 4,
                                       box(width = NULL,
                                           # shinyFilesButton('files', label='File select', title='Please select a file', multiple=FALSE),
-                                          # checkboxInput("bin_bPlot", lLabel$bin_bPlot),
+                                          # checkboxInput("bin_bPlot", lLabels$bin_bPlot),
                                           # conditionalPanel(condition = "input.bin_bPlot",
-                                          actionButton("bin_pre_neuron", lLabel$bin_pre_neuron),
-                                          actionButton("bin_next_neuron", lLabel$bin_next_neuron),
+                                          actionButton("bin_pre_neuron", lLabels$bin_pre_neuron),
+                                          actionButton("bin_next_neuron", lLabels$bin_next_neuron),
                                           textOutput("bin_show_raster_cur_file_name"),
                                           dataTableOutput('where')
                                       )
@@ -125,11 +125,11 @@ ui <- dashboardPage(
                                                solidHeader = TRUE, status = "primary",
 
 uiOutput("DS_offer_upload_bin"),
-                                               shinyFiles::shinyFilesButton("DS_chosen_bin", lLabel$DS_chosen_bin, "", multiple = FALSE),
+                                               shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE),
                                                helpText("Full path of your chosen binned data file: "),
 
                                                textOutput("DS_show_chosen_bin"),
-                                               selectInput("DS_type", lLabel$DS_type, c("basic_DS","generalization_DS")),
+                                               selectInput("DS_type", lLabels$DS_type, c("basic_DS","generalization_DS")),
 
 
 
@@ -161,17 +161,17 @@ uiOutput("DS_offer_upload_bin"),
                                                  title = "Additional parameters (if applicable)",
                                                  conditionalPanel(condition  = "input.CL == 'svm_CL'",
                                                                   selectInput("CL_SVM_kernel",
-                                                                              lLabel$CL_SVM_kernel,
+                                                                              lLabels$CL_SVM_kernel,
                                                                               c("linear", "polynomial", "radial", "sigmoid"),
                                                                               selected = "linear"),
                                                                   numericInput("CL_SVM_cost",
-                                                                               lLabel$CL_SVM_cost, # of constraints violation / inverse of regularization constant",
+                                                                               lLabels$CL_SVM_cost, # of constraints violation / inverse of regularization constant",
                                                                                1,
                                                                                min = 0
                                                                   ),
                                                                   conditionalPanel(condition ="input.CL_SVM_kernel == 'polynomial'",
                                                                                    numericInput("CL_SVM_degree",
-                                                                                                lLabel$CL_SVM_degree,
+                                                                                                lLabels$CL_SVM_degree,
                                                                                                 3,
                                                                                                 min = 2,
                                                                                                 max  = 10)),
@@ -179,11 +179,11 @@ uiOutput("DS_offer_upload_bin"),
 
                                                                   conditionalPanel(condition = "input.CL_SVM_kernel == 'radial'|input.CL_SVM_kernel == 'polynomial'",
                                                                                    numericInput("CL_SVM_coef0",
-                                                                                                lLabel$CL_SVM_coef0, # Constant in the kernel function",
+                                                                                                lLabels$CL_SVM_coef0, # Constant in the kernel function",
                                                                                                 0)),
                                                                   conditionalPanel(condition = "input.CL_SVM_kernel == 'radial'|input.CL_SVM_kernel == 'polynomial'|input.CL_SVM_kernel == 'sigmoid'",
                                                                                    numericInput("CL_SVM_gamma",
-                                                                                                lLabel$CL_SVM_gamma,
+                                                                                                lLabels$CL_SVM_gamma,
                                                                                                 NULL)
                                                                   )
                                                  ))
@@ -204,15 +204,15 @@ uiOutput("DS_offer_upload_bin"),
                                                title = "Cross validator",
                                                width = NULL,
                                                solidHeader = TRUE, status = "primary",
-                                               numericInput("CV_repeat", lLabel$CV_repeat, value = 2, min = 1),
-                                               numericInput("CV_split", lLabel$CV_split, value = 5, min = 2),
-                                               numericInput("CV_resample", lLabel$CV_resample, value = 20, min = 1),
-                                               checkboxInput("CV_bDiag", lLabel$CV_bDiag,TRUE)
+                                               numericInput("CV_repeat", lLabels$CV_repeat, value = 2, min = 1),
+                                               numericInput("CV_split", lLabels$CV_split, value = 5, min = 2),
+                                               numericInput("CV_resample", lLabels$CV_resample, value = 20, min = 1),
+                                               checkboxInput("CV_bDiag", lLabels$CV_bDiag,TRUE)
                                              ),
                                              tabPanel("Script",
                                                       uiOutput("DC_offer_upload_script"),
                                                       # script will show upon chosen
-                                                      shinyFiles::shinyFilesButton("DC_chosen_script", lLabel$DC_chosen_script, "", multiple = FALSE),
+                                                      shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
                                                       helpText("Full path of your chosen script: "),
 
                                                       textOutput("DC_show_chosen_script"),
@@ -258,12 +258,12 @@ uiOutput("DS_offer_upload_bin"),
                                   tabBox(width = 12,
                                          # title = "Result plot",
                                          tabPanel("timeplot",
-                                                  selectInput("Plot_TCT_result_type_to_plot", lLabel$Plot_TCT_result_type_to_plot,
+                                                  selectInput("Plot_TCT_result_type_to_plot", lLabels$Plot_TCT_result_type_to_plot,
                                                               c("Zero-one loss", "Rank results", "Decision Values")),
                                                   plotOutput("timeplot")
                                          ),
                                          tabPanel("TCT heatmap",
-                                                  selectInput("Plot_basic_result_type_to_plot", lLabel$Plot_basic_result_type_to_plot,
+                                                  selectInput("Plot_basic_result_type_to_plot", lLabels$Plot_basic_result_type_to_plot,
                                                               c("Zero-one loss", "Rank results", "Decision Values")),
                                                   plotOutput("tct")
                                          )
