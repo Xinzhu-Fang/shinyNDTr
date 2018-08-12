@@ -219,12 +219,18 @@ function(input, output, session) {
 
 
   rv_para <- reactiveValues()
-  rv_para$id <-  c("DS_chosen_bin", "DS_type","CL", "CV_repeat", "CV_resample","CV_split")
 
+rv_para$computed <- 1
 
 
 
   observeEvent(input$DC_scriptize,{
+
+
+    # refresh rv_para$id
+    rv_para$id <-  c("DS_chosen_bin", "DS_type","CL", "CV_repeat", "CV_resample","CV_split")
+
+
     # oberveEvent is executed before eventReactive
     if(input$DS_type == "basic_DS"){
       rv_para$id <- c(rv_para$id,"DS_basic_var_to_decode")
@@ -238,7 +244,13 @@ function(input, output, session) {
 
     rv_para$inputID <- paste0("input$", rv_para$id)
 
+    rv_para$computed <- rv_para$computed * (-1)
     eval(parse(text = paste0("req(", rv_para$inputID, ")")))
+
+
+
+
+
 
     rv_para$id_of_useful_paras <- c(rv_para$id, "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
                                     "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "DS_bUse_all_levels","FP", "FP_excluded_k",
@@ -270,9 +282,9 @@ function(input, output, session) {
   })
 
 
-  er_scriptize_action_error <- eventReactive(input$DC_scriptize,{
+  er_scriptize_action_error <- eventReactive(rv_para$computed,{
 
-
+print(rv_para$id)
     # my_decoding_paras <<- paste0("my_",decoding_paras)
 
     temp_need = lapply(rv_para$id, function(i){
@@ -289,9 +301,7 @@ function(input, output, session) {
 
   })
 
-  observeEvent(input$DC_run_decoding,{
-    eval(parse(text = rv$script))
-  })
+
 
   observeEvent(input$bin_pre_neuron,{
     if(rv$raster_cur_neuron > 1){
