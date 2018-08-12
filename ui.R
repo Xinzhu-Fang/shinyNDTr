@@ -13,27 +13,33 @@ ui <- dashboardPage(
     tabItems(
       tabItem(tabName = "bin",
               navbarPage(title = "",
-
                          tabPanel(
-                           title = "Choose raster data",
+                           title = "Upload new raster data",
                            fluidRow(
                              box(width = NULL,
                                  helpText("We only accept .mat and .Rda format !"),
-                      uiOutput("bin_offer_upload_raster"),
-                                 shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, ""),
-                                 helpText("Full path of your chosen directory of raster data: "),
-
-                                 textOutput("bin_show_chosen_raster"),
+                                 uiOutput("bin_offer_upload_raster"),
                                  uiOutput("bin_offer_create_raster"),
                                  uiOutput("bin_evil_raster"),
                                  textOutput("bin_show_create_raster_function_run")
-
-
                              )
-
-
                            )
                          ),
+
+                         # tabPanel(
+                         #   title = "Choose raster data",
+                         #   fluidRow(
+                         #     box(width = NULL,
+                         #
+                         #
+                         #
+                         #
+                         #
+                         #     )
+                         #
+                         #
+                         #   )
+                         # ),
                          tabPanel(
                            title = "Specifing binning parameters",
                            fluidPage(
@@ -41,6 +47,10 @@ ui <- dashboardPage(
                              fluidRow(
                                column(width = 8,
                                       box(width = NULL,
+                                          shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, ""),
+                                          helpText("Full path of your chosen directory of raster data: "),
+
+                                          textOutput("bin_show_chosen_raster"),
                                           numericInput("bin_bin_width", lLabels$bin_bin_width, value = 10, min = 1),
                                           numericInput("bin_step_size", lLabels$bin_step_size, value = 1, min = 1),
                                           numericInput("bin_start_ind", lLabels$bin_start_ind, value = NULL),
@@ -118,13 +128,18 @@ ui <- dashboardPage(
                                       tabBox(width = 12,
                                              height = 1000,
 
+                                             tabPanel(
+                                               title = "Upload new binned data",
+                                               width = NULL,
+                                               solidHeader = TRUE, status = "primary",
+                                               uiOutput("DS_offer_upload_bin")
 
+                                             ),
                                              tabPanel(
                                                title = "Data source",
                                                width = NULL,
                                                solidHeader = TRUE, status = "primary",
 
-uiOutput("DS_offer_upload_bin"),
                                                shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE),
                                                helpText("Full path of your chosen binned data file: "),
 
@@ -209,18 +224,43 @@ uiOutput("DS_offer_upload_bin"),
                                                numericInput("CV_resample", lLabels$CV_resample, value = 20, min = 1),
                                                checkboxInput("CV_bDiag", lLabels$CV_bDiag,TRUE)
                                              ),
-                                             tabPanel("Script",
-                                                      uiOutput("DC_offer_upload_script"),
-                                                      # script will show upon chosen
-                                                      shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
-                                                      helpText("Full path of your chosen script: "),
+                                             tabPanel(
+                                               title = "Generate Script",
+                                               width = NULL,
 
-                                                      textOutput("DC_show_chosen_script"),
-helpText("If you choose to generate the script in R Markdown, to run the script first save it"),
-                                                      radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "markdown"),
-                                                      actionButton("DC_scriptize", "generate script from gui configuration"),
-                                                      uiOutput("DC_scriptize_error")
+                                               # box(
+
+                                               helpText("If you choose to generate the script in R Markdown, to run the script first save it"),
+                                               radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "markdown"),
+                                               actionButton("DC_scriptize", "generate script from gui configuration"),
+                                               uiOutput("DC_scriptize_error")
+                                               # )
+                                             ),
+                                             tabPanel(
+                                               title = "Other scripts",
+                                               width = NULL,
+                                               box(
+                                                 title = "",
+                                                 width = NULL,
+                                                 uiOutput("DC_offer_upload_script")
+                                               ) ,
+                                               box(
+                                                 title = "",
+                                                 width = NULL,
+                                                 # script will show upon chosen
+                                                 shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
+                                                 helpText("Full path of your chosen script: "),
+
+                                                 textOutput("DC_show_chosen_script")
+                                               )
                                              )
+
+                                             # )
+                                             # )
+                                             #
+
+
+                                             # )
 
 
 
@@ -242,7 +282,7 @@ helpText("If you choose to generate the script in R Markdown, to run the script 
 
                                           # textinput of filename to be saved if not existing and to be saved as if existing;
                                           uiOutput("DC_offer_save_displayed_script")
-                                          )
+                                      )
 
 
                                )
