@@ -89,7 +89,9 @@ ui <- dashboardPage(
 
                                       box(width = NULL,
                                           title = "Raster plot",
-                                          color = "green", ribbon = TRUE, title_side = "top right",
+                                          # background = "green",
+                                          ribbon = TRUE,
+                                          title_side = "top right",
                                           # conditionalPanel(condition = "input.bin_bPlot",
 
                                           plotOutput("bin_raster_plot")
@@ -97,7 +99,9 @@ ui <- dashboardPage(
                                       ),
                                       box(width = NULL,
                                           title = "PSTH (Peristimulus time histogram)",
-                                          color = "red", ribbon = TRUE, title_side = "top right",
+                                          # background = "red",
+                                          ribbon = TRUE,
+                                          title_side = "top right",
                                           # conditionalPanel(condition = "input.bin_bPlot",
 
                                           plotOutput("bin_PSTH")
@@ -225,28 +229,38 @@ ui <- dashboardPage(
                                                checkboxInput("CV_bDiag", lLabels$CV_bDiag,TRUE)
                                              ),
                                              tabPanel(
-                                               title = "Generate Script",
-                                               width = NULL,
-
-                                               # box(
-
-                                               helpText("If you choose to generate the script in R Markdown, to run the script first save it"),
-                                               radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "markdown"),
-                                               actionButton("DC_scriptize", "generate script from gui configuration"),
-                                               uiOutput("DC_scriptize_error")
-                                               # )
-                                             ),
-                                             tabPanel(
-                                               title = "Other scripts",
+                                               title = "Script",
                                                width = NULL,
                                                box(
-                                                 title = "",
+                                                 title = lLabels$DC_scriptize,
                                                  width = NULL,
+                                                 status = "danger",
+                                                 # background = "red",
+                                                 solidHeader = TRUE,
+
+                                                 helpText("If you choose to generate the script in R Markdown, to run the script first save it"),
+                                                 radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "markdown"),
+                                                 actionButton("DC_scriptize", "Go"),
+                                                 uiOutput("DC_scriptize_error")
+                                                 # )
+                                               ),
+                                               # tabPanel(
+                                               # title = "",
+                                               # width = NULL,
+                                               box(
+                                                 title = "Upload new script",
+                                                 width = NULL,
+                                                 status = "warning",
+                                                 # background = "yellow",
+                                                 solidHeader = TRUE,
                                                  uiOutput("DC_offer_upload_script")
                                                ) ,
                                                box(
-                                                 title = "",
+                                                 title = "Display a script",
                                                  width = NULL,
+                                                 status = "success",
+                                                 # background = "aqua",
+                                                 solidHeader = TRUE,
                                                  # script will show upon chosen
                                                  shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
                                                  helpText("Full path of your chosen script: "),
