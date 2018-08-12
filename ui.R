@@ -216,6 +216,8 @@ uiOutput("DS_offer_upload_bin"),
                                                       helpText("Full path of your chosen script: "),
 
                                                       textOutput("DC_show_chosen_script"),
+helpText("If you choose to generate the script in R Markdown, to run the script first save it"),
+                                                      radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "markdown"),
                                                       actionButton("DC_scriptize", "generate script from gui configuration"),
                                                       uiOutput("DC_scriptize_error")
                                              )

@@ -20,7 +20,7 @@ setwd("C:/Users/14868/Documents/GitHub/NDTr")
 
 # df_cl_fp <- data.frame(c(1, 1, 1), c(1, 1, 1), c(1, 1, 0))
 
-all_cl <- c("maximum_correlation_CL", "svm_CL", "poisson_naive_bayes_CL")
+all_cl <- c("max_correlation_CL", "svm_CL", "poisson_naive_bayes_CL")
 all_fp <- c("select_k_features_FP", "zscore_FP")
 
 df_cl_fp <- data.frame(c(1, 1), c(1, 1), c(1, 0))
@@ -35,7 +35,7 @@ req_dc_para <- c("CL", "CV_bDiag", "CV_repeat", "CV_resample", "CV_split", "DS_c
 # req_dc_para_basic_leve <- c()
 
 all_input <- list()
-input_id <- c("DC_displayed_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
+input_id <- c("DC_script_mode","DC_displayed_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
               "bin_bin_data", "bin_bin_width", "bin_bPlot", "bin_chosen_raster",
               "bin_end_ind", "bin_next_neuron", "bin_prefix_of_binned_file_name",
               "bin_new_raster",
@@ -52,7 +52,7 @@ input_id <- c("DC_displayed_script_name","DS_save_binned_to_disk","DC_save_scrip
   "script", "sidebarCollapsed", "sidebarItemExpanded")
 
 
-input_label <- c("Where you want the displayed script to be saved", "Save to disk","Save to disk","Save to disk",
+input_label <- c("File type for generated script","Where you want the displayed script to be saved", "Save to disk","Save to disk","Save to disk",
   "Create raster",
                  "Bin the data", "Bin width", "Plot the data? (only for spike trains in .Rda file)", "Choose raster data directory",
                  "Index of the sample where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD)",
@@ -91,7 +91,10 @@ move_file <- function(from, to) {
 }
 
 
-create_script <- function(my_decoding_paras, rv) {
+
+
+
+create_script_in_Rmd <- function(my_decoding_paras, rv) {
 
 
 
@@ -101,29 +104,121 @@ create_script <- function(my_decoding_paras, rv) {
 
 
   my_text = ""
-  # write the header
-  # write("---\ntitle: 'Decoding Analysis'\noutput: pdf_document\n---\n",
-  # file = script_full_name)
+
+my_text = paste0(my_text, "---\ntitle: 'Decoding Analysis'\noutput: pdf_document\n---\n",
+                 "```{r setup, include=FALSE}\n",
+                 "knitr::opts_chunk$set(echo = TRUE)\n",
+                 "```\n")
+
+
+my_text = paste0(my_text, "\n```{r}\n")
+
+  my_text = paste0(my_text, "binned_file_name <-", "'",rv$binned_file_name,"'", "\n")
+
+
+
+  my_text = paste0(my_text, "```\n")
+  my_text = paste0(my_text, "\n```{r}\n")
+
+  if(my_decoding_paras$DS_type == "basic_DS"){
+    my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n")
+    my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n")
+
+    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n")
+    # this one is bad because level_to_use can be passed from the previous selection
+    # if(!is.null(my_decoding_paras$DS_basic_level_to_use)){
+    if(!my_decoding_paras$DS_bUse_all_levels){
+      my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")
+    }
+  }
+
+
+
+
+  my_text = paste0(my_text, "```\n")
+  my_text = paste0(my_text, "\n```{r}\n")
+
+
+  my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n")
+
+
+  my_text = paste0(my_text, "```\n")
+  my_text = paste0(my_text, "\n```{r}\n")
+
+
+  my_text = paste0(my_text, "fps <- list(")
+
+
+  select_k_text = ""
+  norm_text = ""
+
+  if(!is.null(my_decoding_paras$fps)){
+    if(grepl(my_decoding_paras$FP, all_fp[2]) == TRUE){
+      norm_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new()")
+
+    }
+
+    if(grepl(my_decoding_paras$FP, all_fp[1]) == TRUE){
+      select_k_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
+    }
+  }
+
+
+  my_text = paste0(my_text,select_k_text, norm_text, ")\n")
+
+
+  my_text = paste0(my_text, "```\n")
+  my_text = paste0(my_text, "\n```{r}\n")
+
+  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n")
+
+  my_text = paste0(my_text, "```\n")
+  my_text = paste0(my_text, "\n```{r}\n")
+
+
+  my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n")
+  my_text = paste0(my_text, "```\n")
+
+
+
+
+
+
+
+  return(my_text)
+
+}
+
+create_script_in_R <- function(my_decoding_paras, rv) {
+
+
+
+  print(names(my_decoding_paras))
+
+
+
+
+  my_text = ""
 
   # my_text = paste0(my_text, "---\ntitle: 'Decoding Analysis'\noutput: pdf_document\n---\n",
   #                  "```{r setup, include=FALSE}\n",
   #                  "knitr::opts_chunk$set(echo = TRUE)\n",
   #                  "```\n")
   #
-
   # my_text = paste0(my_text, "\n```{r}\n")
-  my_text = paste0(my_text, "binned_data_file_name <-", "'",rv$binned_file_name,"'", "\n")
+
+  my_text = paste0(my_text, "binned_file_name <-", "'",rv$binned_file_name,"'", "\n")
 
 
 
-  # my_text = paste0(my_text, "```\n")
+  #   my_text = paste0(my_text, "```\n")
+  #   my_text = paste0(my_text, "\n```{r}\n")
 
-  # my_text = paste0(my_text, "\n```{r}\n")
   if(my_decoding_paras$DS_type == "basic_DS"){
     my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n")
-    my_text = paste0(my_text, "num_cv_split <- ", my_decoding_paras$CV_split, "\n")
+    my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n")
 
-    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, specific_binned_label_name, num_cv_splits)\n")
+    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n")
     # this one is bad because level_to_use can be passed from the previous selection
     # if(!is.null(my_decoding_paras$DS_basic_level_to_use)){
     if(!my_decoding_paras$DS_bUse_all_levels){
@@ -142,65 +237,44 @@ create_script <- function(my_decoding_paras, rv) {
 
 
   # my_text = paste0(my_text, "```\n")
-
   # my_text = paste0(my_text, "\n```{r}\n")
 
 
-  my_text = paste0(my_text, "fps <-list (")
+  my_text = paste0(my_text, "fps <- list(")
 
 
   select_k_text = ""
   norm_text = ""
 
+  if(!is.null(my_decoding_paras$fps)){
+    if(grepl(my_decoding_paras$FP, all_fp[2]) == TRUE){
+      norm_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new()")
 
-  if(grepl(my_decoding_paras$FP, all_fp[2]) == TRUE){
-    norm_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new()")
+    }
 
+    if(grepl(my_decoding_paras$FP, all_fp[1]) == TRUE){
+      select_k_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
+    }
   }
 
-  if(grepl(my_decoding_paras$FP, all_fp[1]) == TRUE){
-    select_k_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
-  }
 
-  my_text = paste0(my_text,select_k_text, norm_text, ")")
+  my_text = paste0(my_text,select_k_text, norm_text, ")\n")
 
-  my_text = paste0(my_text, ")\n")
 
   # my_text = paste0(my_text, "```\n")
-
   # my_text = paste0(my_text, "\n```{r}\n")
 
-  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n",
-                   "DECODING_RESULTS <- cv$run_decoding()")
+  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n")
 
+  # my_text = paste0(my_text, "```\n")
+  # my_text = paste0(my_text, "\n```{r}\n")
+
+
+  my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n")
   # my_text = paste0(my_text, "```\n")
 
 
-  #   write("#Load the necessary packages and files
-  # ```{r load_files}
-  #         library('tictoc')
-  #         library('fields')
-  #         base_ndtr_dir_name <- '../R/'
-  #         base_data_dir_name <- '../data/'
-  #         # source all files in the R directory
-  #         source(paste0(base_ndtr_dir_name, 'helper_functions.R'))
-  #         source(paste0(base_ndtr_dir_name, 'basic_DS.R'))
-  #         source(paste0(base_ndtr_dir_name, 'max_correlation_CL.R'))
-  #         source(paste0(base_ndtr_dir_name, 'poisson_naive_bayes_CL.R'))
-  #         source(paste0(base_ndtr_dir_name, 'select_k_features_FP.R'))
-  #         source(paste0(base_ndtr_dir_name, 'zscore_FP.R'))
-  #         source(paste0(base_ndtr_dir_name, 'standard_CV.R'))
-  #         ```\n\n\n", file = script_full_name, append = TRUE)
-  #
-
-
-
-
-
-  # content = readChar(script_full_name, file.info(script_full_name)$size)
 
   return(my_text)
 
-}  # get the function to create the script file...
-
-
+}

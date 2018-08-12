@@ -35,9 +35,9 @@ function(input, output, session) {
   rv$binned_maximum_num_of_levels_in_all_var <- NULL
   rv$binned_all_var <- NULL
 
-  rv$script_base_dir <- script_base_dir
+  rv$displayed_script_base_dir <- script_base_dir
   rv$chosen_script_name <- NULL
-  rv$script <- NULL
+  rv$displayed_script <- NULL
   # only files meet specified files types will be shown. However, such dir shown as empty can still be choosed
   shinyFiles::shinyDirChoose(input, "bin_chosen_raster", roots = c(wd=raster_base_dir), filetypes = c("mat", "Rda"))
   shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=bin_base_dir), filetypes = "Rda")
@@ -103,11 +103,11 @@ function(input, output, session) {
 
   observe({
     req(input$DC_chosen_script)
-    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$script_base_dir),input$DC_chosen_script)
+    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$displayed_script_base_dir),input$DC_chosen_script)
     print(temp_df_file)
     req(temp_df_file$datapath)
     rv$chosen_script_name <- temp_df_file$datapath
-    rv$script <- readChar(rv$chosen_script_name, file.info(rv$chosen_script_name)$size)
+    rv$displayed_script <- readChar(rv$chosen_script_name, file.info(rv$chosen_script_name)$size)
     updateTextInput(session, "DC_displayed_script_name", value = rv$chosen_script_name)
   })
 
@@ -142,7 +142,7 @@ function(input, output, session) {
   observe({
     req(input$DC_uploaded_script)
     temp_file_name <-input$DC_uploaded_script$datapath
-    updateTextInput(session, "DC_uploaded_script_name", value = file.path(rv$script_base_dir, basename(temp_file_name)))
+    updateTextInput(session, "DC_uploaded_script_name", value = file.path(rv$displayed_script_base_dir, basename(temp_file_name)))
   })
 
   observeEvent(input$DC_save_script_to_disk, {
@@ -154,15 +154,33 @@ function(input, output, session) {
 
 
   observeEvent(input$DC_save_displayed_script,{
-    req(input$DC_displayed_script_name, rv$script)
+    req(input$DC_displayed_script_name, rv$displayed_script)
     file.create(input$DC_displayed_script_name, overwrite = TRUE)
-    write(rv$script, file = input$DC_displayed_script_name)
+    write(rv$displayed_script, file = input$DC_displayed_script_name)
   })
 
-  observeEvent(input$DC_run_decoding, {
-    req(rv$script)
+  rv$script_rmd_not_saved_yet <- 1
 
-    eval(parse(text = rv$script))
+  er_DC_rmd_not_saved_before_decoding_error <- eventReactive(rv$script_rmd_not_saved_yet,{
+  validate("Please save the script in R Mardown first !")
+})
+  observeEvent(input$DC_run_decoding, {
+
+    req(rv$displayed_script)
+
+
+if(input$DC_script_mode == "markdown"){
+  if(!(file.exists(input$DC_displayed_script_name) && tools::file_ext(input$DC_displayed_script_name) == "Rmd" || tools::file_ext(input$DC_displayed_script_name) == "rmd" )){
+    rv$script_rmd_not_saved_yet <- rv$script_rmd_not_saved_yet * (-1)
+  } else{
+    rmarkdown::render(input$DC_displayed_script_name)
+
+  }
+
+} else{
+  eval(parse(text = rv$displayed_script))
+
+}
   })
   observeEvent(input$bin_bin_data,{
     if(rv$raster_bRda){
@@ -271,13 +289,13 @@ rv_para$computed <- 1
 
 
     print(rv_para$values)
-    lDecoding_paras <<- as.list(rv_para$values)
-    lDecoding_paras <<- setNames(lDecoding_paras, rv_para$id_of_useful_paras)
+    lDecoding_paras <- as.list(rv_para$values)
+    lDecoding_paras <- setNames(lDecoding_paras, rv_para$id_of_useful_paras)
 
     print(lDecoding_paras)
     print(lDecoding_paras$CL)
 
-    rv$script <- create_script(lDecoding_paras, rv)
+    rv$displayed_script <- create_script_in_Rmd(lDecoding_paras, rv)
 
   })
 
@@ -412,13 +430,13 @@ print(rv_para$id)
   })
   er_DC_save_displayed_script_error <- eventReactive(input$DC_save_displayed_script,{
     validate(
-      need(rv$script,"Please generate the script first !"),
+      need(rv$displayed_script,"Please generate the script first !"),
       need(input$DC_displayed_script_name, paste0("Please tell me ",lLabels$DC_displayed_script_name))
     )
   })
 
   er_DC_run_decoding_error <- eventReactive(input$DC_run_decoding, {
-    validate(need(rv$script,"Please generate the script first !"))
+    validate(need(rv$displayed_script,"Please generate the script first !"))
   })
   output$bin_action_error = renderUI({
     er_bin_action_error()
@@ -448,6 +466,7 @@ print(rv_para$id)
 
   output$DC_run_decoding_error = renderUI({
     er_DC_run_decoding_error()
+    er_DC_rmd_not_saved_before_decoding_error()
   })
   output$where = renderDataTable(input$bin_uploaded_raster)
 
@@ -478,7 +497,7 @@ print(rv_para$id)
   output$DC_offer_upload_script = renderUI({
     list(
       fileInput("DC_uploaded_script", lLabels$DC_uploaded_script, multiple = TRUE),
-      textInput("DC_uploaded_script_name", lLabels$DC_uploaded_script_name, rv$script_base_dir),
+      textInput("DC_uploaded_script_name", lLabels$DC_uploaded_script_name, rv$displayed_script_base_dir),
       actionButton("DC_save_script_to_disk", lLabels$DC_save_script_to_disk),
       uiOutput("DC_save_script_to_disk_error")
     )
@@ -486,7 +505,7 @@ print(rv_para$id)
 
   output$DC_offer_save_displayed_script = renderUI({
     list(
-      textInput("DC_displayed_script_name", lLabels$DC_displayed_script_name, rv$script_base_dir),
+      textInput("DC_displayed_script_name", lLabels$DC_displayed_script_name, rv$displayed_script_base_dir),
       actionButton("DC_save_displayed_script", "Save the script"),
       uiOutput("DC_save_displayed_script_error")
     )
@@ -711,11 +730,9 @@ print(rv_para$id)
 
   output$DC_ace = renderUI({
     shinyAce::aceEditor("script",
-                        rv$script,
-                        mode = "r")
-    # mode = "markdown")
+                        rv$displayed_script,
+                        mode = input$DC_script_mode)
 
-    # check all inputs and poentially send error message !
 
   })
 }

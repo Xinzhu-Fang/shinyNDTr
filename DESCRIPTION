@@ -14,5 +14,7 @@ Imports:
     shinydashboard,
     shinyAce,
     shinyFiles,
-    dplyr
+    dplyr,
+    rmarkdown,
+    tools
 Remotes: Xinzhu-Fang/NDTr
