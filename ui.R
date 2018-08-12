@@ -1,5 +1,3 @@
-
-
 ui <- dashboardPage(
   dashboardHeader(title = "NDTr"),
   dashboardSidebar(
@@ -121,6 +119,20 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "decode",
               navbarPage(title = "",
+
+                         tabPanel(
+
+                           title = "Upload new binned data",
+                           width = NULL,
+                           box(
+                             title = NULL,
+                             width = NULL,
+
+
+                             uiOutput("DS_offer_upload_bin")
+
+                           )
+                         ),
                          tabPanel(
                            title = "Specifing decoding papameters",
                            fluidPage(
@@ -132,13 +144,13 @@ ui <- dashboardPage(
                                       tabBox(width = 12,
                                              height = 1000,
 
-                                             tabPanel(
-                                               title = "Upload new binned data",
-                                               width = NULL,
-                                               solidHeader = TRUE, status = "primary",
-                                               uiOutput("DS_offer_upload_bin")
-
-                                             ),
+                                             # tabPanel(
+                                             #   title = "Upload new binned data",
+                                             #   width = NULL,
+                                             #   solidHeader = TRUE, status = "primary",
+                                             #   uiOutput("DS_offer_upload_bin")
+                                             #
+                                             # ),
                                              tabPanel(
                                                title = "Data source",
                                                width = NULL,
@@ -336,4 +348,3 @@ ui <- dashboardPage(
   )
 
 )
-
