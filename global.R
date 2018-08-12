@@ -124,12 +124,18 @@ create_script <- function(my_decoding_paras, rv) {
     my_text = paste0(my_text, "num_cv_split <- ", my_decoding_paras$CV_split, "\n")
 
     my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, specific_binned_label_name, num_cv_splits)\n")
+    # this one is bad because level_to_use can be passed from the previous selection
+    # if(!is.null(my_decoding_paras$DS_basic_level_to_use)){
+    if(!my_decoding_paras$DS_bUse_all_levels){
+      my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")
+    }
+  }
 
-  }
-  #! need to change this basic_DS
-  if(!is.null(my_decoding_paras$CV_repeat)){
-    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")
-  }
+
+
+
+  # my_text = paste0(my_text, "```\n")
+  # my_text = paste0(my_text, "\n```{r}\n")
 
 
   my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n")

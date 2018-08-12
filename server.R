@@ -244,7 +244,9 @@ function(input, output, session) {
                                     "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "DS_bUse_all_levels","FP", "FP_excluded_k",
                                     "FP_selected_k")
 
-    if(!is.null(input$DS_gen_num_training_level_groups)){
+    # this one is bad because level_groups can be passed from the previous selection
+    # if(!is.null(input$DS_gen_num_training_level_groups)){
+    if(input$DS_type == "generalization_DS"){
       temp_training_level_groups <- paste0("input$DS_training_level_group_", c(1:input$DS_gen_num_training_level_groups))
       temp_testing_level_groups <- paste0("input$DS_testing_level_group_", c(1:input$DS_gen_num_testing_level_groups))
       rv_para$id_of_useful_paras <- c(rv_para$id_of_useful_paras, trainin_level_groups, testing_level_groups)
