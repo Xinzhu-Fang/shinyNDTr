@@ -1,8 +1,12 @@
-
-library('fields')
-library('ggplot2')
-library("plotrix")
+# I am definitely using these
 library('shinydashboard')
+
+# I am using these but might abandon these
+library("plotrix")
+library('fields')
+
+# I should use these
+library('ggplot2')
 library('dplyr')
 
 
@@ -24,6 +28,8 @@ setwd("../NDTr")
 all_cl <- c("max_correlation_CL", "svm_CL", "poisson_naive_bayes_CL")
 all_fp <- c("select_k_features_FP", "zscore_FP")
 
+all_result_type <- c("zero_one_loss_results", "rank_results", "decision_value_results")
+
 df_cl_fp <- data.frame(c(1, 1), c(1, 1), c(1, 0))
 
 colnames(df_cl_fp) <- all_cl
@@ -36,7 +42,7 @@ req_dc_para <- c("CL", "CV_bDiag", "CV_repeat", "CV_resample", "CV_split", "DS_c
 # req_dc_para_basic_leve <- c()
 
 all_input <- list()
-input_id <- c("DC_result_name", "DC_script_mode","DC_displayed_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
+input_id <- c("Plot_chosen_result","DC_result_name", "DC_script_mode","DC_displayed_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
               "bin_bin_data", "bin_bin_width", "bin_bPlot", "bin_chosen_raster",
               "bin_end_ind", "bin_next_neuron", "bin_prefix_of_binned_file_name",
               "bin_new_raster",
@@ -49,11 +55,11 @@ input_id <- c("DC_result_name", "DC_script_mode","DC_displayed_script_name","DS_
   "DC_uploaded_script","DC_uploaded_script_name", "DS_basic_level_to_use", "DS_basic_var_to_decode", "DS_bUse_all_levels",
   "DS_chosen_bin", "DS_gen_num_training_level_groups", "DS_gen_var_to_decode",
   "DS_gen_var_to_use", "DS_type", "DS_uploaded_binned", "DS_uploaded_binned_name","FP", "FP_excluded_k",
-  "FP_selected_k", "Plot_basic_result_type_to_plot", "Plot_TCT_result_type_to_plot",
+  "FP_selected_k", "Plot_timeseries_result_type", "",
   "script", "sidebarCollapsed", "sidebarItemExpanded")
 
 
-input_label <- c("Where you want the result to be saved (e.g., ZD_001.Rda)","File type for generated script","Where you want the displayed script to be saved", "Save to disk","Save to disk","Save to disk",
+input_label <- c("Choose the result to plot", "Where you want the result to be saved (e.g., ZD_001.Rda)","File type for generated script","Where you want the displayed script to be saved", "Save to disk","Save to disk","Save to disk",
   "Create raster",
                  "Bin the data", "Bin width", "Plot the data? (only for spike trains in .Rda file)", "Choose raster data directory",
                  "Index of the sample where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD)",

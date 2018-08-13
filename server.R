@@ -41,11 +41,13 @@ function(input, output, session) {
   rv$displayed_script <- NULL
 
   rv$result_base_dir <- result_base_dir
+  rv$result_file_name <- NULL
+  rv$result_data <- NULL
   # only files meet specified files types will be shown. However, such dir shown as empty can still be choosed
   shinyFiles::shinyDirChoose(input, "bin_chosen_raster", roots = c(wd=raster_base_dir), filetypes = c("mat", "Rda"))
   shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=bin_base_dir), filetypes = "Rda")
   shinyFiles::shinyFileChoose(input, "DC_chosen_script", root =c(wd=script_base_dir, filetypes = c("R", "Rmd")))
-
+shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_dir), filetypes = "Rda")
   observe({
     req(input$bin_chosen_raster)
 
@@ -122,6 +124,17 @@ function(input, output, session) {
   #
   #   updateTextInput(session, "bin_uploaded_raster_name", value = file.path(rv$raster_base_dir, basename(temp_file_name)))
   # })
+
+  observe({
+    req(input$Plot_chosen_result)
+    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$result_base_dir),input$Plot_chosen_result)
+    print(temp_df_file)
+    req(temp_df_file$datapath)
+    rv$result_file_name <- temp_df_file$datapath
+    load(rv$result_file_name)
+    rv$result_data <- DECODING_RESULTS
+
+  })
 
   observeEvent(input$bin_save_raster_to_disk, {
     req(input$bin_uploaded_raster,input$bin_uploaded_raster_name )
@@ -748,7 +761,53 @@ print(rv_para$id)
 
 
   })
+
+  output$timeseries = renderPlot({
+    req(rv$result_data)
+    print(input$Plot_timeseries_result_type)
+    length(rv$result_data)
+    typeof(rv$result_data)
+    head(rv$result_data)
+    temp_result <- rv$result_data[[input$Plot_timeseries_result_type]]
+
+    # get the mean over CV splits
+
+    temp_mean_results <- colMeans(temp_result)
+
+    temp_time_bin_names <- NDTr::get_center_bin_time(dimnames(temp_result)[[3]])
+
+    plot(temp_time_bin_names, diag(temp_mean_results), type = "o", xlab = "Time (ms)", ylab = "Decoding Accuracy")
+
+    abline(v = 0)
+
+  })
+
+
+
+output$tct = renderPlot({
+  req(rv$result_data)
+  temp_result <- rv$result_data[[input$Plot_tct_result_type]]
+
+  # get the mean over CV splits
+
+  temp_mean_results <- colMeans(temp_result)
+
+  temp_time_bin_names <- NDTr::get_center_bin_time(dimnames(temp_result)[[3]])
+
+  image.plot(temp_time_bin_names, temp_time_bin_names, temp_mean_results,
+
+             legend.lab = "Classification Accuracy", xlab = "Test time (ms)",
+
+             ylab = "Train time (ms)")
+
+  abline(v = 0)
+
+})
+
 }
+
+
+
 
 
 

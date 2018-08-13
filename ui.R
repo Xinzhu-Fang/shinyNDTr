@@ -310,16 +310,22 @@ ui <- dashboardPage(
 
                            column(width = 12,
                                   #issue cannot make use of the large blank on the right
-                                  tabBox(width = 12,
+                                  box(
+                                    title = NULL,
+                                    width = NULL,
+                                    shinyFiles::shinyFilesButton("Plot_chosen_result", lLabels$Plot_chosen_result, "", multiple = FALSE)
+
+                                  ),
+                                  tabBox(width = NULL,
                                          # title = "Result plot",
-                                         tabPanel("timeplot",
-                                                  selectInput("Plot_TCT_result_type_to_plot", lLabels$Plot_TCT_result_type_to_plot,
-                                                              c("Zero-one loss", "Rank results", "Decision Values")),
-                                                  plotOutput("timeplot")
+                                         tabPanel("timeseries",
+                                                  selectInput("Plot_timeseries_result_type", lLabels$Plot_timeseries_result_type,
+                                                              all_result_type),
+                                                  plotOutput("timeseries")
                                          ),
                                          tabPanel("TCT heatmap",
-                                                  selectInput("Plot_basic_result_type_to_plot", lLabels$Plot_basic_result_type_to_plot,
-                                                              c("Zero-one loss", "Rank results", "Decision Values")),
+                                                  selectInput("Plot_tct_result_type", lLabels$Plot_TCT_result_type,
+                                                              all_result_type),
                                                   plotOutput("tct")
                                          )
 
