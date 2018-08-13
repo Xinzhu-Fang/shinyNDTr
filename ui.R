@@ -2,7 +2,7 @@ ui <- dashboardPage(
   dashboardHeader(title = "shinyNDTr"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("binning the raster data", tabName = "bin"),
+      menuItem("Binning the raster data", tabName = "bin"),
       menuItem("Population Decoding", tabName = "decode")#,
       # menuItem("Single Neuron Analysis", tabName = "single")
 
@@ -234,7 +234,7 @@ ui <- dashboardPage(
                                                # title = "",
                                                # width = NULL,
                                                box(
-                                                 title = "Upload new script",
+                                                 title = "Upload new script(s)",
                                                  width = NULL,
                                                  status = "warning",
                                                  # background = "yellow",

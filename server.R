@@ -13,6 +13,7 @@ function(input, output, session) {
   raster_base_dir <- file.path(eval(getwd()),'data/raster') #"."
   bin_base_dir <- file.path(eval(getwd()),'data/binned') #"."
   script_base_dir <- file.path(eval(getwd()),'tests') #"."
+  result_base_dir <- file.path(eval(getwd()),'results') #"."
 
   rv <- reactiveValues()
 
@@ -38,6 +39,8 @@ function(input, output, session) {
   rv$displayed_script_base_dir <- script_base_dir
   rv$chosen_script_name <- NULL
   rv$displayed_script <- NULL
+
+  rv$result_base_dir <- result_base_dir
   # only files meet specified files types will be shown. However, such dir shown as empty can still be choosed
   shinyFiles::shinyDirChoose(input, "bin_chosen_raster", roots = c(wd=raster_base_dir), filetypes = c("mat", "Rda"))
   shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=bin_base_dir), filetypes = "Rda")
@@ -246,7 +249,7 @@ rv_para$computed <- 1
 
 
     # refresh rv_para$id
-    rv_para$id <-  c("DS_chosen_bin", "DS_type","CL", "CV_repeat", "CV_resample","CV_split")
+    rv_para$id <-  c("DS_chosen_bin", "DS_type","CL", "CV_repeat", "CV_resample","CV_split", "DC_result_name")
 
 
     # oberveEvent is executed before eventReactive
@@ -441,6 +444,10 @@ print(rv_para$id)
   er_DC_run_decoding_error <- eventReactive(input$DC_run_decoding, {
     validate(need(rv$displayed_script,"Please generate the script first !"))
   })
+
+  er_DC_result_name_not_given_error <- eventReactive(input$DC_run_decoding, {
+    validate(need(input$DC_result_name, paste0("Please set ", lLabels$DC_result_name, " first!")))
+  })
   output$bin_action_error = renderUI({
     er_bin_action_error()
 
@@ -470,6 +477,7 @@ print(rv_para$id)
   output$DC_run_decoding_error = renderUI({
     er_DC_run_decoding_error()
     er_DC_rmd_not_saved_before_decoding_error()
+    er_DC_result_name_not_given_error()
   })
   output$where = renderDataTable(input$bin_uploaded_raster)
 
@@ -517,6 +525,8 @@ print(rv_para$id)
 
   output$DC_offer_run_decoding = renderUI({
     list(
+
+      textInput("DC_result_name", lLabels$DC_result_name, rv$result_base_dir),
       actionButton("DC_run_decoding", lLabels$DC_run_decoding),
       uiOutput("DC_run_decoding_error")
     )

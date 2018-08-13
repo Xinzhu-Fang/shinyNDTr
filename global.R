@@ -36,7 +36,7 @@ req_dc_para <- c("CL", "CV_bDiag", "CV_repeat", "CV_resample", "CV_split", "DS_c
 # req_dc_para_basic_leve <- c()
 
 all_input <- list()
-input_id <- c("DC_script_mode","DC_displayed_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
+input_id <- c("DC_result_name", "DC_script_mode","DC_displayed_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
               "bin_bin_data", "bin_bin_width", "bin_bPlot", "bin_chosen_raster",
               "bin_end_ind", "bin_next_neuron", "bin_prefix_of_binned_file_name",
               "bin_new_raster",
@@ -53,7 +53,7 @@ input_id <- c("DC_script_mode","DC_displayed_script_name","DS_save_binned_to_dis
   "script", "sidebarCollapsed", "sidebarItemExpanded")
 
 
-input_label <- c("File type for generated script","Where you want the displayed script to be saved", "Save to disk","Save to disk","Save to disk",
+input_label <- c("Where you want the result to be saved (e.g., ZD_001.Rda)","File type for generated script","Where you want the displayed script to be saved", "Save to disk","Save to disk","Save to disk",
   "Create raster",
                  "Bin the data", "Bin width", "Plot the data? (only for spike trains in .Rda file)", "Choose raster data directory",
                  "Index of the sample where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD)",
@@ -183,6 +183,9 @@ create_script_in_rmd <- function(my_decoding_paras, rv) {
 
 
   my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n")
+  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '", my_decoding_paras$DC_result_name, "')")
+
+
   my_text = paste0(my_text, "```\n")
 
 
@@ -281,6 +284,9 @@ create_script_in_r <- function(my_decoding_paras, rv) {
 
 
   my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n")
+
+  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '", my_decoding_paras$DC_result_name, "')")
+
   # my_text = paste0(my_text, "```\n")
 
 
