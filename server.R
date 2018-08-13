@@ -295,8 +295,11 @@ rv_para$computed <- 1
     print(lDecoding_paras)
     print(lDecoding_paras$CL)
 
-    rv$displayed_script <- create_script_in_Rmd(lDecoding_paras, rv)
-
+    if(input$DC_script_mode == "markdown"){
+    rv$displayed_script <- create_script_in_rmd(lDecoding_paras, rv)
+} else (
+  rv$displayed_script <- create_script_in_r(lDecoding_paras, rv)
+)
   })
 
 

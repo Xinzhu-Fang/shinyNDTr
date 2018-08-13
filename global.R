@@ -95,7 +95,7 @@ move_file <- function(from, to) {
 
 
 
-create_script_in_Rmd <- function(my_decoding_paras, rv) {
+create_script_in_rmd <- function(my_decoding_paras, rv) {
 
 
 
@@ -106,45 +106,46 @@ create_script_in_Rmd <- function(my_decoding_paras, rv) {
 
   my_text = ""
 
-my_text = paste0(my_text, "---\ntitle: 'Decoding Analysis'\noutput: pdf_document\n---\n",
-                 "```{r setup, include=FALSE}\n",
-                 "knitr::opts_chunk$set(echo = TRUE)\n",
-                 "```\n")
+  my_text = paste0(my_text, "---\ntitle: 'Decoding Analysis'\noutput: pdf_document\n---\n",
+                   "```{r setup, include=FALSE}\n",
+                   "knitr::opts_chunk$set(echo = TRUE)\n",
+                   "```\n")
 
-
-my_text = paste0(my_text, "\n```{r}\n")
+  my_text = paste0(my_text, "\n```{r}\n")
 
   my_text = paste0(my_text, "binned_file_name <-", "'",rv$binned_file_name,"'", "\n")
 
 
 
-  my_text = paste0(my_text, "```\n")
-  my_text = paste0(my_text, "\n```{r}\n")
+  #   my_text = paste0(my_text, "```\n")
+  #   my_text = paste0(my_text, "\n```{r}\n")
 
   if(my_decoding_paras$DS_type == "basic_DS"){
     my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n")
     my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n")
 
     my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n")
+    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")
+
     # this one is bad because level_to_use can be passed from the previous selection
     # if(!is.null(my_decoding_paras$DS_basic_level_to_use)){
     if(!my_decoding_paras$DS_bUse_all_levels){
-      my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")
+      my_text = paste0(my_text, "ds$level_to_use <- ", deparse(dput(my_decoding_paras$DS_basic_level_to_use)), "\n")
     }
   }
 
 
 
 
-  my_text = paste0(my_text, "```\n")
-  my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n")
+  # my_text = paste0(my_text, "\n```{r}\n")
 
 
   my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n")
 
 
-  my_text = paste0(my_text, "```\n")
-  my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n")
+  # my_text = paste0(my_text, "\n```{r}\n")
 
 
   my_text = paste0(my_text, "fps <- list(")
@@ -153,28 +154,32 @@ my_text = paste0(my_text, "\n```{r}\n")
   select_k_text = ""
   norm_text = ""
 
-  if(!is.null(my_decoding_paras$fps)){
-    if(grepl(my_decoding_paras$FP, all_fp[2]) == TRUE){
-      norm_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new()")
-
+  if(!is.null(my_decoding_paras$FP)){
+    if(sum(grepl(all_fp[2], my_decoding_paras$FP)) == 1){
+      norm_text = paste0(norm_text, "NDTr::", all_fp[2], "$new()")
+      my_text = paste0(my_text, norm_text, ",")
     }
 
-    if(grepl(my_decoding_paras$FP, all_fp[1]) == TRUE){
-      select_k_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
+    if(sum(grepl(all_fp[1], my_decoding_paras$FP)) == 1){
+      select_k_text = paste0(select_k_text, "NDTr::", all_fp[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, ",", "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
+      my_text = paste0(my_text, select_k_text)
+    } else {
+      my_text = substr(my_text, 1, nchar(my_text)-1)
+
     }
   }
 
+  # browser()
+  my_text = paste0(my_text, ")\n")
 
-  my_text = paste0(my_text,select_k_text, norm_text, ")\n")
 
-
-  my_text = paste0(my_text, "```\n")
-  my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n")
+  # my_text = paste0(my_text, "\n```{r}\n")
 
   my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n")
 
-  my_text = paste0(my_text, "```\n")
-  my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n")
+  # my_text = paste0(my_text, "\n```{r}\n")
 
 
   my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n")
@@ -182,15 +187,13 @@ my_text = paste0(my_text, "\n```{r}\n")
 
 
 
-
-
-
-
   return(my_text)
 
 }
 
-create_script_in_R <- function(my_decoding_paras, rv) {
+
+
+create_script_in_r <- function(my_decoding_paras, rv) {
 
 
 
@@ -220,10 +223,12 @@ create_script_in_R <- function(my_decoding_paras, rv) {
     my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n")
 
     my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n")
+    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")
+
     # this one is bad because level_to_use can be passed from the previous selection
     # if(!is.null(my_decoding_paras$DS_basic_level_to_use)){
     if(!my_decoding_paras$DS_bUse_all_levels){
-      my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")
+      my_text = paste0(my_text, "ds$level_to_use <- ", deparse(dput(my_decoding_paras$DS_basic_level_to_use)), "\n")
     }
   }
 
@@ -247,19 +252,23 @@ create_script_in_R <- function(my_decoding_paras, rv) {
   select_k_text = ""
   norm_text = ""
 
-  if(!is.null(my_decoding_paras$fps)){
-    if(grepl(my_decoding_paras$FP, all_fp[2]) == TRUE){
-      norm_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new()")
-
+  if(!is.null(my_decoding_paras$FP)){
+    if(sum(grepl(all_fp[2], my_decoding_paras$FP)) == 1){
+      norm_text = paste0(norm_text, "NDTr::", all_fp[2], "$new()")
+      my_text = paste0(my_text, norm_text, ",")
     }
 
-    if(grepl(my_decoding_paras$FP, all_fp[1]) == TRUE){
-      select_k_text = paste0(my_text, "NDTr::", my_decoding_paras$FP[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
+    if(sum(grepl(all_fp[1], my_decoding_paras$FP)) == 1){
+      select_k_text = paste0(select_k_text, "NDTr::", all_fp[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, ",", "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
+      my_text = paste0(my_text, select_k_text)
+    } else {
+      my_text = substr(my_text, 1, nchar(my_text)-1)
+
     }
   }
 
-
-  my_text = paste0(my_text,select_k_text, norm_text, ")\n")
+# browser()
+  my_text = paste0(my_text, ")\n")
 
 
   # my_text = paste0(my_text, "```\n")

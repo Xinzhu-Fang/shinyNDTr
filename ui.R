@@ -1,5 +1,5 @@
 ui <- dashboardPage(
-  dashboardHeader(title = "NDTr"),
+  dashboardHeader(title = "shinyNDTr"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("binning the raster data", tabName = "bin"),
@@ -11,33 +11,8 @@ ui <- dashboardPage(
     tabItems(
       tabItem(tabName = "bin",
               navbarPage(title = "",
-                         tabPanel(
-                           title = "Upload new raster data",
-                           fluidRow(
-                             box(width = NULL,
-                                 helpText("We only accept .mat and .Rda format !"),
-                                 uiOutput("bin_offer_upload_raster"),
-                                 uiOutput("bin_offer_create_raster"),
-                                 uiOutput("bin_evil_raster"),
-                                 textOutput("bin_show_create_raster_function_run")
-                             )
-                           )
-                         ),
 
-                         # tabPanel(
-                         #   title = "Choose raster data",
-                         #   fluidRow(
-                         #     box(width = NULL,
-                         #
-                         #
-                         #
-                         #
-                         #
-                         #     )
-                         #
-                         #
-                         #   )
-                         # ),
+
                          tabPanel(
                            title = "Specifing binning parameters",
                            fluidPage(
@@ -65,7 +40,18 @@ ui <- dashboardPage(
                              )
                            )
                          ),
-
+                         tabPanel(
+                           title = "Upload new raster data",
+                           fluidRow(
+                             box(width = NULL,
+                                 helpText("We only accept .mat and .Rda format !"),
+                                 uiOutput("bin_offer_upload_raster"),
+                                 uiOutput("bin_offer_create_raster"),
+                                 uiOutput("bin_evil_raster"),
+                                 textOutput("bin_show_create_raster_function_run")
+                             )
+                           )
+                         ),
                          tabPanel(
 
                            title = "Plot raster data",
@@ -120,19 +106,7 @@ ui <- dashboardPage(
       tabItem(tabName = "decode",
               navbarPage(title = "",
 
-                         tabPanel(
 
-                           title = "Upload new binned data",
-                           width = NULL,
-                           box(
-                             title = NULL,
-                             width = NULL,
-
-
-                             uiOutput("DS_offer_upload_bin")
-
-                           )
-                         ),
                          tabPanel(
                            title = "Specifing decoding papameters",
                            fluidPage(
@@ -251,7 +225,7 @@ ui <- dashboardPage(
                                                  solidHeader = TRUE,
 
                                                  helpText("If you choose to generate the script in R Markdown, to run the script first save it"),
-                                                 radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "markdown"),
+                                                 radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "r"),
                                                  actionButton("DC_scriptize", "Go"),
                                                  uiOutput("DC_scriptize_error")
                                                  # )
@@ -317,6 +291,19 @@ ui <- dashboardPage(
                              )
                            )
 
+                         ),
+                         tabPanel(
+
+                           title = "Upload new binned data",
+                           width = NULL,
+                           box(
+                             title = NULL,
+                             width = NULL,
+
+
+                             uiOutput("DS_offer_upload_bin")
+
+                           )
                          ),
                          tabPanel(
                            title = "Plot decoding results",
