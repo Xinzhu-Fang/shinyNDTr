@@ -10,10 +10,10 @@ function(input, output, session) {
 
 
   # !
-  raster_base_dir <- file.path(eval(getwd()),'data/raster') #"."
-  bin_base_dir <- file.path(eval(getwd()),'data/binned') #"."
-  script_base_dir <- file.path(eval(getwd()),'tests') #"."
-  result_base_dir <- file.path(eval(getwd()),'results') #"."
+  raster_base_dir <- file.path(eval(getwd()),'data/raster/') #"."
+  bin_base_dir <- file.path(eval(getwd()),'data/binned/') #"."
+  script_base_dir <- file.path(eval(getwd()),'tests/') #"."
+  result_base_dir <- file.path(eval(getwd()),'results/') #"."
 
   rv <- reactiveValues()
 

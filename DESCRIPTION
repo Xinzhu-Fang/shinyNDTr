@@ -17,5 +17,6 @@ Imports:
     dplyr,
     rmarkdown,
     tools,
-    fields
+    fields,
+    plotrix
 Remotes: Xinzhu-Fang/NDTr

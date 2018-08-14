@@ -6,7 +6,7 @@ library("plotrix")
 library('fields')
 
 # I should use these
-library('ggplot2')
+# library('ggplot2')
 library('dplyr')
 
 
@@ -59,7 +59,7 @@ input_id <- c("Plot_chosen_result","DC_result_name", "DC_script_mode","DC_displa
   "script", "sidebarCollapsed", "sidebarItemExpanded")
 
 
-input_label <- c("Choose the result to plot", "Where you want the result to be saved (e.g., ZD_001.Rda)","File type for generated script","Where you want the displayed script to be saved", "Save to disk","Save to disk","Save to disk",
+input_label <- c("Choose the result to plot", "Where you want the result to be saved (e.g., ZD_001.Rda)","File type for generated script","Where you want the displayed script to be saved (e.g., ZD_01.Rmd)", "Save to disk","Save to disk","Save to disk",
   "Create raster",
                  "Bin the data", "Bin width", "Plot the data? (only for spike trains in .Rda file)", "Choose raster data directory",
                  "Index of the sample where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD)",
