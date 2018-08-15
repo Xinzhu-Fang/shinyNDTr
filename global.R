@@ -16,7 +16,7 @@ rm(list=ls())
 
 # working directoy is initialized as the dir of run file
 # setwd("..")
-setwd("../NDTr")
+# setwd("../NDTr")
 # setwd("C:/Users/14868/Documents/GitHub/NDTr")
 # setwd("/cbcl/cbcl01/xf15/NDTr")
 
