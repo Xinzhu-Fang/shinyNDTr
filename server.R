@@ -755,8 +755,10 @@ print(rv_para$id)
   })
 
   output$DC_ace = renderUI({
+    print(rv$displayed_script)
     shinyAce::aceEditor("script",
-                        rv$displayed_script,
+                        # rv$displayed_script,
+                        NULL,
                         mode = input$DC_script_mode)
 
 

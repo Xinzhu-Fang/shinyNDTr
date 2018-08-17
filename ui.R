@@ -318,7 +318,7 @@ ui <- dashboardPage(
                                   ),
                                   tabBox(width = NULL,
                                          # title = "Result plot",
-                                         tabPanel("timeseries",
+                                         tabPanel("Timeseries",
                                                   selectInput("Plot_timeseries_result_type", lLabels$Plot_timeseries_result_type,
                                                               all_result_type),
                                                   plotOutput("timeseries")
