@@ -38,7 +38,7 @@ function(input, output, session) {
 
   rv$displayed_script_base_dir <- script_base_dir
   rv$chosen_script_name <- NULL
-  rv$displayed_script <- NULL
+  rv$displayed_script <- ""
 
   rv$result_base_dir <- result_base_dir
   rv$result_file_name <- NULL
@@ -757,8 +757,8 @@ print(rv_para$id)
   output$DC_ace = renderUI({
     print(rv$displayed_script)
     shinyAce::aceEditor("script",
-                        # rv$displayed_script,
-                        NULL,
+                        rv$displayed_script,
+                        # NULL,
                         mode = input$DC_script_mode)
 
 
