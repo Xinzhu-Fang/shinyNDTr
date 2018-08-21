@@ -47,7 +47,7 @@ function(input, output, session) {
   shinyFiles::shinyDirChoose(input, "bin_chosen_raster", roots = c(wd=raster_base_dir), filetypes = c("mat", "Rda"))
   shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=bin_base_dir), filetypes = "Rda")
   shinyFiles::shinyFileChoose(input, "DC_chosen_script", root =c(wd=script_base_dir, filetypes = c("R", "Rmd")))
-shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_dir), filetypes = "Rda")
+  shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_dir), filetypes = "Rda")
   observe({
     req(input$bin_chosen_raster)
 
@@ -64,10 +64,10 @@ shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_
     if(length(temp_names_of_all_mat_files_in_raster_dir) > 0){
       rv$raster_bMat <- TRUE
 
-      print(rv$raster_bMat)
+      # print(rv$raster_bMat)
       #
 
-      print("mat")
+      # print("mat")
     } else {
       rv$raster_bMat <-FALSE
       temp_names_of_all_rda_files_in_raster_dir <-
@@ -76,13 +76,13 @@ shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_
 
       if(rv$raster_num_neuron > 0){
         rv$raster_bRda <- TRUE
-        print("rda")
+        # print("rda")
         rv$raster_cur_file_name <- temp_names_of_all_rda_files_in_raster_dir[rv$raster_cur_neuron]
         load(file.path(rv$raster_cur_dir_name, rv$raster_cur_file_name))
         rv$raster_cur_data <- select(raster_data, starts_with("time."))
         # print(head(rv$raster_cur_data))
       } else{
-        print("none")
+        # print("none")
         rv$raster_bRda <- FALSE
         # this doesn't work; observe is for action not calculation
         # validate("Only accept raster data in .mat or .Rda format !")
@@ -94,7 +94,7 @@ shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_
   observe({
     req(input$DS_chosen_bin)
     temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$binned_base_dir),input$DS_chosen_bin)
-    print(temp_df_file)
+    # print(temp_df_file)
     req(temp_df_file$datapath)
     rv$binned_file_name <- temp_df_file$datapath
 
@@ -107,9 +107,14 @@ shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_
   })
 
   observe({
+    print("do?")
+
     req(input$DC_chosen_script)
+
+    print("do!")
+
     temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$displayed_script_base_dir),input$DC_chosen_script)
-    print(temp_df_file)
+    # print(temp_df_file)
     req(temp_df_file$datapath)
     rv$chosen_script_name <- temp_df_file$datapath
     rv$displayed_script <- readChar(rv$chosen_script_name, file.info(rv$chosen_script_name)$size)
@@ -128,7 +133,7 @@ shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_
   observe({
     req(input$Plot_chosen_result)
     temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$result_base_dir),input$Plot_chosen_result)
-    print(temp_df_file)
+    # print(temp_df_file)
     req(temp_df_file$datapath)
     rv$result_file_name <- temp_df_file$datapath
     load(rv$result_file_name)
@@ -155,18 +160,8 @@ shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_
 
   })
 
-  observe({
-    req(input$DC_uploaded_script)
-    temp_file_name <-input$DC_uploaded_script$datapath
-    updateTextInput(session, "DC_uploaded_script_name", value = file.path(rv$displayed_script_base_dir, basename(temp_file_name)))
-  })
-
-  observeEvent(input$DC_save_script_to_disk, {
-    req(input$DC_uploaded_script,input$DC_uploaded_script_name )
-    move_file(input$DC_uploaded_script$datapath,input$DC_uploaded_script_name )
 
 
-  })
 
 
   observeEvent(input$DC_save_displayed_script,{
@@ -178,29 +173,29 @@ shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_
   rv$script_rmd_not_saved_yet <- 1
 
   er_DC_rmd_not_saved_before_decoding_error <- eventReactive(rv$script_rmd_not_saved_yet,{
-  validate("Please save the script in R Mardown first !")
-})
+    validate("Please save the script in R Mardown first !")
+  })
   observeEvent(input$DC_run_decoding, {
 
     req(rv$displayed_script)
 
 
-if(input$DC_script_mode == "markdown"){
-  if(!(file.exists(input$DC_displayed_script_name) && tools::file_ext(input$DC_displayed_script_name) == "Rmd" || tools::file_ext(input$DC_displayed_script_name) == "rmd" )){
-    rv$script_rmd_not_saved_yet <- rv$script_rmd_not_saved_yet * (-1)
-  } else{
-    rmarkdown::render(input$DC_displayed_script_name)
+    if(input$DC_script_mode == "markdown"){
+      if(!(file.exists(input$DC_displayed_script_name) && tools::file_ext(input$DC_displayed_script_name) == "Rmd" || tools::file_ext(input$DC_displayed_script_name) == "rmd" )){
+        rv$script_rmd_not_saved_yet <- rv$script_rmd_not_saved_yet * (-1)
+      } else{
+        rmarkdown::render(input$DC_displayed_script_name)
 
-  }
+      }
 
-} else{
-  eval(parse(text = rv$displayed_script))
+    } else{
+      eval(parse(text = rv$displayed_script))
 
-}
+    }
   })
   observeEvent(input$bin_bin_data,{
     if(rv$raster_bRda){
-      print(input$bin_start_ind)
+      # print(input$bin_start_ind)
       temp_call = paste0("NDTr::create_binned_data(rv$raster_cur_dir_name,",
                          "input$bin_prefix_of_binned_file_name,",
                          "input$bin_bin_width, input$bin_step_size")
@@ -254,17 +249,16 @@ if(input$DC_script_mode == "markdown"){
 
   rv_para <- reactiveValues()
 
-rv_para$computed <- 1
+  rv_para$computed <- 1
 
 
 
   observeEvent(input$DC_scriptize,{
 
-
+    # observe({
     # refresh rv_para$id
     rv_para$id <-  c("DS_chosen_bin", "DS_type","CL", "CV_repeat", "CV_resample","CV_split", "DC_result_name")
-
-
+    # rv_para$id <-  c("rv$binned_file_name", "DS_type","CL", "CV_repeat", "CV_resample","CV_split", "DC_result_name")
     # oberveEvent is executed before eventReactive
     if(input$DS_type == "basic_DS"){
       rv_para$id <- c(rv_para$id,"DS_basic_var_to_decode")
@@ -280,8 +274,10 @@ rv_para$computed <- 1
 
     rv_para$computed <- rv_para$computed * (-1)
     eval(parse(text = paste0("req(", rv_para$inputID, ")")))
+    #     # !
+    # do.call(req, as.list(rv_para$inputID))
 
-
+    # print("do")
 
 
 
@@ -304,24 +300,24 @@ rv_para$computed <- 1
     })
 
 
-    print(rv_para$values)
+    # print(rv_para$values)
     lDecoding_paras <- as.list(rv_para$values)
     lDecoding_paras <- setNames(lDecoding_paras, rv_para$id_of_useful_paras)
 
-    print(lDecoding_paras)
-    print(lDecoding_paras$CL)
+    # print(lDecoding_paras)
+    # print(lDecoding_paras$CL)
 
     if(input$DC_script_mode == "markdown"){
-    rv$displayed_script <- create_script_in_rmd(lDecoding_paras, rv)
-} else (
-  rv$displayed_script <- create_script_in_r(lDecoding_paras, rv)
-)
+      rv$displayed_script <- create_script_in_rmd(lDecoding_paras, rv)
+    } else (
+      rv$displayed_script <- create_script_in_r(lDecoding_paras, rv)
+    )
   })
 
 
   er_scriptize_action_error <- eventReactive(rv_para$computed,{
 
-print(rv_para$id)
+    # print(rv_para$id)
     # my_decoding_paras <<- paste0("my_",decoding_paras)
 
     temp_need = lapply(rv_para$id, function(i){
@@ -394,8 +390,8 @@ print(rv_para$id)
 
 
     binned_data = rv$binned_data
-    print(head(binned_data))
-    print(input$DS_var_to_decode)
+    # print(head(binned_data))
+    # print(input$DS_var_to_decode)
     levels(factor(binned_data[[paste0("labels.",input$DS_basic_var_to_decode)]]))
 
     # }
@@ -405,8 +401,8 @@ print(rv_para$id)
     req(rv$binned_file_name)
 
     binned_data = rv$binned_data
-    print(head(binned_data))
-    print(input$DS_var_to_decode)
+    # print(head(binned_data))
+    # print(input$DS_var_to_decode)
     levels(factor(binned_data[[paste0("labels.",input$DS_gen_var_to_use)]]))
 
     # }
@@ -441,12 +437,7 @@ print(rv_para$id)
       need(input$DS_uploaded_binned_name, paste0("Please tell me ", lLabels$DS_uploaded_binned_name))
     )
   })
-  er_DC_save_script_to_disk_error <- eventReactive(input$DC_save_script_to_disk,{
-    validate(
-      need(input$DC_uploaded_script, paste0("Please ", lLabels$DC_uploaded_script, "!")),
-      need(input$DC_uploaded_script_name, paste0("Please tell me ", lLabels$DC_uploaded_script_name))
-    )
-  })
+
   er_DC_save_displayed_script_error <- eventReactive(input$DC_save_displayed_script,{
     validate(
       need(rv$displayed_script,"Please generate the script first !"),
@@ -518,14 +509,7 @@ print(rv_para$id)
     )
   })
 
-  output$DC_offer_upload_script = renderUI({
-    list(
-      fileInput("DC_uploaded_script", lLabels$DC_uploaded_script, multiple = TRUE),
-      textInput("DC_uploaded_script_name", lLabels$DC_uploaded_script_name, rv$displayed_script_base_dir),
-      actionButton("DC_save_script_to_disk", lLabels$DC_save_script_to_disk),
-      uiOutput("DC_save_script_to_disk_error")
-    )
-  })
+
 
   output$DC_offer_save_displayed_script = renderUI({
     list(
@@ -726,7 +710,7 @@ print(rv_para$id)
   output$FP_select_k_features = renderUI({
     print(input$FP)
     if(sum(grepl(all_fp[1], input$FP))){
-      print("FP")
+      # print("FP")
       numericInput("FP_selected_k",
                    lLabels$FP_selected_k,
                    reactive_bin_num_neuron(),
@@ -755,7 +739,7 @@ print(rv_para$id)
   })
 
   output$DC_ace = renderUI({
-    print(rv$displayed_script)
+    # print(rv$displayed_script)
     shinyAce::aceEditor("script",
                         rv$displayed_script,
                         # NULL,
@@ -766,7 +750,7 @@ print(rv_para$id)
 
   output$timeseries = renderPlot({
     req(rv$result_data)
-    print(input$Plot_timeseries_result_type)
+    # print(input$Plot_timeseries_result_type)
     length(rv$result_data)
     typeof(rv$result_data)
     head(rv$result_data)
@@ -786,25 +770,25 @@ print(rv_para$id)
 
 
 
-output$tct = renderPlot({
-  req(rv$result_data)
-  temp_result <- rv$result_data[[input$Plot_tct_result_type]]
+  output$tct = renderPlot({
+    req(rv$result_data)
+    temp_result <- rv$result_data[[input$Plot_tct_result_type]]
 
-  # get the mean over CV splits
+    # get the mean over CV splits
 
-  temp_mean_results <- colMeans(temp_result)
+    temp_mean_results <- colMeans(temp_result)
 
-  temp_time_bin_names <- NDTr::get_center_bin_time(dimnames(temp_result)[[3]])
+    temp_time_bin_names <- NDTr::get_center_bin_time(dimnames(temp_result)[[3]])
 
-  image.plot(temp_time_bin_names, temp_time_bin_names, temp_mean_results,
+    image.plot(temp_time_bin_names, temp_time_bin_names, temp_mean_results,
 
-             legend.lab = "Classification Accuracy", xlab = "Test time (ms)",
+               legend.lab = "Classification Accuracy", xlab = "Test time (ms)",
 
-             ylab = "Train time (ms)")
+               ylab = "Train time (ms)")
 
-  abline(v = 0)
+    abline(v = 0)
 
-})
+  })
 
 }
 

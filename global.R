@@ -12,7 +12,9 @@ library('dplyr')
 
 rm(list=ls())
 
-
+# https://groups.google.com/forum/#!msg/shiny-discuss/rU3vwGMZexQ/zeKhiYXrtEQJ
+# settng the uploaded file size limit to 1 GB
+options(shiny.maxRequestSize=1000*1024^2)
 
 # working directoy is initialized as the dir of run file
 # setwd("..")

@@ -14,7 +14,7 @@ ui <- dashboardPage(
 
 
                          tabPanel(
-                           title = "Specifing binning parameters",
+                           title = "Specify binning parameters",
                            fluidPage(
 
                              fluidRow(
@@ -71,24 +71,28 @@ ui <- dashboardPage(
                                column(width = 8,
 
 
-                                      box(width = NULL,
-                                          title = "Raster plot",
-                                          # background = "green",
-                                          ribbon = TRUE,
-                                          title_side = "top right",
-                                          # conditionalPanel(condition = "input.bin_bPlot",
+                                      tabBox(width = NULL,
+                                             title = "",
+                                             tabPanel(
+                                               title = "Raster plot",
+                                               # background = "green",
+                                               ribbon = TRUE,
+                                               title_side = "top right",
+                                               # conditionalPanel(condition = "input.bin_bPlot",
 
-                                          plotOutput("bin_raster_plot")
+                                               plotOutput("bin_raster_plot")
+                                             ),
+                                             tabPanel(
+                                               width = NULL,
+                                               title = "PSTH (Peristimulus time histogram)",
+                                               # background = "red",
+                                               ribbon = TRUE,
+                                               title_side = "top right",
+                                               # conditionalPanel(condition = "input.bin_bPlot",
 
-                                      ),
-                                      box(width = NULL,
-                                          title = "PSTH (Peristimulus time histogram)",
-                                          # background = "red",
-                                          ribbon = TRUE,
-                                          title_side = "top right",
-                                          # conditionalPanel(condition = "input.bin_bPlot",
+                                               plotOutput("bin_PSTH")
+                                             )
 
-                                          plotOutput("bin_PSTH")
 
                                       )
                                )
@@ -108,7 +112,7 @@ ui <- dashboardPage(
 
 
                          tabPanel(
-                           title = "Specifing decoding papameters",
+                           title = "Specify decoding papameters",
                            fluidPage(
 
 
@@ -233,14 +237,7 @@ ui <- dashboardPage(
                                                # tabPanel(
                                                # title = "",
                                                # width = NULL,
-                                               box(
-                                                 title = "Upload new script(s)",
-                                                 width = NULL,
-                                                 status = "warning",
-                                                 # background = "yellow",
-                                                 solidHeader = TRUE,
-                                                 uiOutput("DC_offer_upload_script")
-                                               ) ,
+
                                                box(
                                                  title = "Display a script",
                                                  width = NULL,
