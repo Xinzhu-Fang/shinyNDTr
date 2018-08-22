@@ -57,8 +57,9 @@ ui <- dashboardPage(
                            title = "Plot raster data",
                            fluidPage(
                              fluidRow(
-                               column(width = 4,
-                                      box(width = NULL,
+                               column(width = 12,
+                                      box(
+                                        width = NULL,
                                           # shinyFilesButton('files', label='File select', title='Please select a file', multiple=FALSE),
                                           # checkboxInput("bin_bPlot", lLabels$bin_bPlot),
                                           # conditionalPanel(condition = "input.bin_bPlot",
@@ -66,10 +67,7 @@ ui <- dashboardPage(
                                           actionButton("bin_next_neuron", lLabels$bin_next_neuron),
                                           textOutput("bin_show_raster_cur_file_name"),
                                           dataTableOutput('where')
-                                      )
-                               ) ,
-                               column(width = 8,
-
+                                      ),
 
                                       tabBox(width = NULL,
                                              title = "",

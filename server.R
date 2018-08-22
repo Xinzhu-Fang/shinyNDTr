@@ -22,7 +22,7 @@ function(input, output, session) {
   rv$raster_cur_neuron <- 1
   rv$raster_num_neuron <- NA
   rv$raster_cur_file_name <- NULL
-  rv$raster_cur_data <- NULL
+  rv$mRaster_cur_data <- NULL
   rv$raster_bRda <- FALSE
   rv$raster_bMat <-FALSE
 
@@ -48,6 +48,8 @@ function(input, output, session) {
   shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=bin_base_dir), filetypes = "Rda")
   shinyFiles::shinyFileChoose(input, "DC_chosen_script", root =c(wd=script_base_dir, filetypes = c("R", "Rmd")))
   shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_dir), filetypes = "Rda")
+
+
   observe({
     req(input$bin_chosen_raster)
 
@@ -58,6 +60,7 @@ function(input, output, session) {
     # print(rv$raster_cur_dir_name)
     req(rv$raster_cur_dir_name)
 
+    print("lala")
     temp_names_of_all_mat_files_in_raster_dir <-
       list.files(rv$raster_cur_dir_name, pattern = "\\.mat$")
     #
@@ -79,7 +82,20 @@ function(input, output, session) {
         # print("rda")
         rv$raster_cur_file_name <- temp_names_of_all_rda_files_in_raster_dir[rv$raster_cur_neuron]
         load(file.path(rv$raster_cur_dir_name, rv$raster_cur_file_name))
-        rv$raster_cur_data <- select(raster_data, starts_with("time."))
+
+        # # the following code makes this observe keeps executing, don't know why
+        # temp_dfRaster <- select(raster_data, starts_with("time."))
+        # rv$mRaster_cur_data <- as.matrix(temp_dfRaster)
+        # rownames(rv$mRaster_cur_data) <- 1:dim(rv$mRaster_cur_data)[1]
+        # colnames(rv$mRaster_cur_data) <- gsub("time.", "", colnames(rv$mRaster_cur_data))
+        # # using the following instead
+        temp_dfRaster <- select(raster_data, starts_with("time."))
+        temp_mRaster <- as.matrix(temp_dfRaster)
+        rownames(temp_mRaster) <- 1:dim(temp_mRaster)[1]
+        colnames(temp_mRaster) <- gsub("time.", "", colnames(temp_mRaster))
+        rv$mRaster_cur_data <- temp_mRaster
+
+        # rv$mRaster_cur_data <- select(raster_data, starts_with("time."))
         # print(head(rv$raster_cur_data))
       } else{
         # print("none")
@@ -590,19 +606,47 @@ function(input, output, session) {
 
   output$bin_raster_plot = renderPlot({
     # print(head(rv$raster_cur_data))
-    req(rv$raster_cur_data)
-    temp_raster <-rv$raster_cur_data
+    # req(rv$raster_cur_data)
+    # temp_raster <-rv$raster_cur_data
+    #
+    # color2D.matplot(1 - temp_raster, border = NA, xlab = "Time (ms)",
+    #                 ylab = "Trial")
+req(rv$mRaster_cur_data)
+    temp_dfMelted <- melt(rv$mRaster_cur_data)
+    # magically, trials/rownames are oncverted from character to integer by melt. Times/colnames are also integer
+    if(length(unique(factor(temp_dfMelted$value))) < 3){
+      ggplot(temp_dfMelted, aes(x = Var2, y = Var1)) +
+        geom_raster(aes(fill=factor(value))) +
+        scale_fill_manual(values=c("0"="white", "1"="black"))+
+        labs(x="Time (ms)", y="Trial")+
+        theme(legend.position="none")
+    } else {
+      ggplot(temp_dfMelted, aes(x = Var2, y = Var1)) +
+        geom_raster(aes(fill=value)) +
+        scale_fill_gradient(low="grey90", high="red")+
+        labs(x="Time (ms)", y="Trial")+
+        theme(legend.position="none")
+    }
 
-    color2D.matplot(1 - temp_raster, border = NA, xlab = "Time (ms)",
-                    ylab = "Trial")
   })
 
   output$bin_PSTH = renderPlot({
-    req(rv$raster_cur_data)
+    # req(rv$raster_cur_data)
 
-    temp_raster <- rv$raster_cur_data
-    plot(colSums(temp_raster, na.rm = FALSE, dims = 1)/nrow(temp_raster),
-         xlab = "Time(ms)", ylab = "average firing rate")
+    # temp_raster <- rv$raster_cur_data
+    # plot(colSums(temp_raster, na.rm = FALSE, dims = 1)/nrow(temp_raster),
+    #      xlab = "Time(ms)", ylab = "average firing rate")
+
+    req(rv$mRaster_cur_data)
+
+    temp_mRaster_cur_data_mean <- colSums(rv$mRaster_cur_data, na.rm = FALSE, dims = 1)/nrow(rv$mRaster_cur_data)
+    temp_dfRaster_mean <- data.frame(time = as.numeric(names(temp_mRaster_cur_data_mean)), spike_mean_over_trials = temp_mRaster_cur_data_mean)
+
+
+    qplot(x = time, y = spike_mean_over_trials, data = temp_dfRaster_mean, geom = "point", color = "salmon1") +
+      scale_x_continuous(breaks = temp_dfRaster_mean$time[c(TRUE, rep(FALSE, length(temp_dfRaster_mean$time)/10))]) +
+      labs(x="Time (ms)", y="Spike Mean over Trials") +
+      theme(legend.position="none")
   })
 
 
