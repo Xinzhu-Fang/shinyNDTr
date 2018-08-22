@@ -18,12 +18,18 @@ ui <- dashboardPage(
                            fluidPage(
 
                              fluidRow(
-                               column(width = 8,
+                               column(width = 12,
                                       box(width = NULL,
-                                          shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, ""),
+
                                           helpText("Full path of your chosen directory of raster data: "),
 
                                           textOutput("bin_show_chosen_raster"),
+
+                                          shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, "")
+                                          ),
+                                      box(width = 8,
+
+
                                           numericInput("bin_bin_width", lLabels$bin_bin_width, value = 10, min = 1),
                                           numericInput("bin_step_size", lLabels$bin_step_size, value = 1, min = 1),
                                           numericInput("bin_start_ind", lLabels$bin_start_ind, value = NULL),
@@ -118,7 +124,6 @@ ui <- dashboardPage(
                              fluidRow(
                                column(width = 6,
                                       tabBox(width = 12,
-                                             height = 1000,
 
                                              # tabPanel(
                                              #   title = "Upload new binned data",
@@ -130,12 +135,18 @@ ui <- dashboardPage(
                                              tabPanel(
                                                title = "Data source",
                                                width = NULL,
-                                               solidHeader = TRUE, status = "primary",
+                                               solidHeader = TRUE,
+                                               status = "primary",
+box(
+  width = NULL,
+  helpText("Full path of your chosen binned data file: "),
 
-                                               shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE),
-                                               helpText("Full path of your chosen binned data file: "),
+  textOutput("DS_show_chosen_bin"),
+  shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE)
 
-                                               textOutput("DS_show_chosen_bin"),
+  ),
+
+
                                                selectInput("DS_type", lLabels$DS_type, c("basic_DS","generalization_DS")),
 
 
@@ -250,27 +261,11 @@ ui <- dashboardPage(
                                                )
                                              )
 
-                                             # )
-                                             # )
-                                             #
-
-
-                                             # )
-
-
-
                                       )),
-
-
-
-
-
-
 
 
                                column(width = 6,
                                       box(width = NULL,
-                                          height = NULL,
 
                                           uiOutput("DC_ace"),
                                           uiOutput("DC_offer_run_decoding"),

@@ -2,8 +2,8 @@ Package: shinyNDTr
 Title: A web-based interface for neural decoding in R
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Xinzhu", "Fang", email = "xf15@hampshire.edu", role = "cre"),
-    person("Ethan", "Meyers", email = "emeyers@hampshire.edu", role = "aut"))
+    person("Xinzhu", "Fang", email = "xf15@hampshire.edu", role = "aut"),
+    person("Ethan", "Meyers", email = "emeyers@hampshire.edu", role = "cre"))
 Description: What the package does (one paragraph).
 Depends: 
     R (>= 3.4.4)

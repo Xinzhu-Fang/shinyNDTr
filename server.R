@@ -10,15 +10,15 @@ function(input, output, session) {
 
 
   # !
-  raster_base_dir <- file.path(eval(getwd()),'../NDTr/data/raster/') #"."
-  bin_base_dir <- file.path(eval(getwd()),'../NDTr/data/binned/') #"."
-  script_base_dir <- file.path(eval(getwd()),'../NDTr/tests/') #"."
-  result_base_dir <- file.path(eval(getwd()),'../NDTr/results/') #"."
+  raster_base_dir <- file.path(eval(getwd()),'../NDTr/data/raster') #"."
+  bin_base_dir <- file.path(eval(getwd()),'../NDTr/data/binned') #"."
+  script_base_dir <- file.path(eval(getwd()),'../NDTr/tests') #"."
+  result_base_dir <- file.path(eval(getwd()),'../NDTr/results') #"."
 
   rv <- reactiveValues()
 
   rv$raster_base_dir <- raster_base_dir
-  rv$raster_cur_dir_name <- NULL
+  rv$raster_cur_dir_name <- "No directory chosen yet"
   rv$raster_cur_neuron <- 1
   rv$raster_num_neuron <- NA
   rv$raster_cur_file_name <- NULL
@@ -31,7 +31,7 @@ function(input, output, session) {
   rv$create_raster_function_run <- ""
 
   rv$binned_base_dir <- bin_base_dir
-  rv$binned_file_name <- NULL
+  rv$binned_file_name <- "No file chosen yet"
   rv$binned_data <- NULL
   rv$binned_maximum_num_of_levels_in_all_var <- NULL
   rv$binned_all_var <- NULL
