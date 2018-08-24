@@ -2,6 +2,7 @@ ui <- dashboardPage(
   dashboardHeader(title = "shinyNDTr"),
   dashboardSidebar(
     sidebarMenu(
+      menuItem("Home", tabName = "home"),
       menuItem("Binning the raster data", tabName = "bin"),
       menuItem("Population Decoding", tabName = "decode")#,
       # menuItem("Single Neuron Analysis", tabName = "single")
@@ -9,6 +10,12 @@ ui <- dashboardPage(
     )),
   dashboardBody(
     tabItems(
+      tabItem(tabName = "home",
+              fluidPage(
+                shinyFiles::shinyFilesButton("home_loaded_state", lLabels$home_loaded_state, "", multiple = FALSE),
+                uiOutput("home_offer_save_state")
+              )
+      ),
       tabItem(tabName = "bin",
               navbarPage(title = "",
 

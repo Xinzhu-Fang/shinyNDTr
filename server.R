@@ -10,12 +10,16 @@ function(input, output, session) {
 
 
   # !
+  state_base_dir <- file.path(eval(getwd()))
   raster_base_dir <- file.path(eval(getwd()),'../NDTr/data/raster') #"."
   bin_base_dir <- file.path(eval(getwd()),'../NDTr/data/binned') #"."
   script_base_dir <- file.path(eval(getwd()),'../NDTr/tests') #"."
   result_base_dir <- file.path(eval(getwd()),'../NDTr/results') #"."
 
   rv <- reactiveValues()
+
+  rv$state_base_dir <- state_base_dir
+  rv$state_cur_file_name <- ""
 
   rv$raster_base_dir <- raster_base_dir
   rv$raster_cur_dir_name <- "No directory chosen yet"
@@ -44,12 +48,49 @@ function(input, output, session) {
   rv$result_file_name <- NULL
   rv$result_data <- NULL
   # only files meet specified files types will be shown. However, such dir shown as empty can still be choosed
+
+  shinyFiles::shinyFileChoose(input, "home_loaded_state", roots = c(wd=state_base_dir), filetypes = "Rda")
   shinyFiles::shinyDirChoose(input, "bin_chosen_raster", roots = c(wd=raster_base_dir), filetypes = c("mat", "Rda"))
   shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=bin_base_dir), filetypes = "Rda")
   shinyFiles::shinyFileChoose(input, "DC_chosen_script", root =c(wd=script_base_dir, filetypes = c("R", "Rmd")))
   shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_dir), filetypes = "Rda")
 
+  output$home_offer_save_state = renderUI({
+    list(
+      textInput("home_state_name", lLabels$home_state_name, rv$state_base_dir),
+      actionButton("home_save_state", lLabels$home_save_state),
+      uiOutput("home_save_state_error")
+    )
+  })
 
+  output$home_save_state_error = renderUI({
+    er_home_save_state_error()
+  })
+  er_home_save_state_error <- eventReactive(input$home_save_state, {
+    validate(
+      need(input$home_state_name, paste0("Please tell me ", lLabels$home_state_name, " first!"))
+    )
+  })
+  observeEvent(input$home_save_state, {
+    req(input$home_state_name)
+    state = reactiveValuesToList(input)
+    save(state, file = input$home_state_name)
+
+  })
+observe({
+#   req(input$home_loaded_state)
+#   temp_state_file <- shinyFiles::parseFilePaths(c(wd=rv$state_base_dir), input$home_loaded_state)
+#   req(temp_state_file$datapath)
+#   rv$state_cur_file_name <-temp_state_file$datapath
+#   load(rv$state_cur_file_name)
+#   for(iInput in 1: length(state)){
+#     input[[iInput]] <- state[iInput]
+#   }
+# lapply(state, function(i)){
+#   do.call(update)
+# }
+
+})
   observe({
     req(input$bin_chosen_raster)
 
@@ -210,6 +251,8 @@ function(input, output, session) {
     }
   })
   observeEvent(input$bin_bin_data,{
+
+print(typeof(input$bin_bin_data))
     if(rv$raster_bRda){
       # print(input$bin_start_ind)
       temp_call = paste0("NDTr::create_binned_data(rv$raster_cur_dir_name,",
