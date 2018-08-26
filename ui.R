@@ -33,7 +33,7 @@ ui <- dashboardPage(
                                           textOutput("bin_show_chosen_raster"),
 
                                           shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, "")
-                                          ),
+                                      ),
                                       box(width = 8,
 
 
@@ -73,13 +73,13 @@ ui <- dashboardPage(
                                column(width = 12,
                                       box(
                                         width = NULL,
-                                          # shinyFilesButton('files', label='File select', title='Please select a file', multiple=FALSE),
-                                          # checkboxInput("bin_bPlot", lLabels$bin_bPlot),
-                                          # conditionalPanel(condition = "input.bin_bPlot",
-                                          actionButton("bin_pre_neuron", lLabels$bin_pre_neuron),
-                                          actionButton("bin_next_neuron", lLabels$bin_next_neuron),
-                                          textOutput("bin_show_raster_cur_file_name"),
-                                          dataTableOutput('where')
+                                        # shinyFilesButton('files', label='File select', title='Please select a file', multiple=FALSE),
+                                        # checkboxInput("bin_bPlot", lLabels$bin_bPlot),
+                                        # conditionalPanel(condition = "input.bin_bPlot",
+                                        actionButton("bin_pre_neuron", lLabels$bin_pre_neuron),
+                                        actionButton("bin_next_neuron", lLabels$bin_next_neuron),
+                                        textOutput("bin_show_raster_cur_file_name"),
+                                        dataTableOutput('where')
                                       ),
 
                                       tabBox(width = NULL,
@@ -129,7 +129,7 @@ ui <- dashboardPage(
 
 
                              fluidRow(
-                               column(width = 6,
+                               column(width = 12,
                                       tabBox(width = 12,
 
                                              # tabPanel(
@@ -144,14 +144,14 @@ ui <- dashboardPage(
                                                width = NULL,
                                                solidHeader = TRUE,
                                                status = "primary",
-box(
-  width = NULL,
-  helpText("Full path of your chosen binned data file: "),
+                                               box(
+                                                 width = NULL,
+                                                 helpText("Full path of your chosen binned data file: "),
 
-  textOutput("DS_show_chosen_bin"),
-  shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE)
+                                                 textOutput("DS_show_chosen_bin"),
+                                                 shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE)
 
-  ),
+                                               ),
 
 
                                                selectInput("DS_type", lLabels$DS_type, c("basic_DS","generalization_DS")),
@@ -237,52 +237,60 @@ box(
                                              tabPanel(
                                                title = "Script",
                                                width = NULL,
-                                               box(
-                                                 title = lLabels$DC_scriptize,
-                                                 width = NULL,
-                                                 status = "danger",
-                                                 # background = "red",
-                                                 solidHeader = TRUE,
+                                               fluidRow(
+                                                 column(
+                                                   width = 6,
+                                                   box(
+                                                     title = lLabels$DC_scriptize,
+                                                     width = NULL,
+                                                     status = "danger",
+                                                     # background = "red",
+                                                     solidHeader = TRUE,
 
-                                                 helpText("If you choose to generate the script in R Markdown, to run the script first save it"),
-                                                 radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "r"),
-                                                 actionButton("DC_scriptize", "Go"),
-                                                 uiOutput("DC_scriptize_error")
-                                                 # )
-                                               ),
-                                               # tabPanel(
-                                               # title = "",
-                                               # width = NULL,
+                                                     helpText("If you choose to generate the script in R Markdown, to run the script first save it"),
+                                                     radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "r"),
+                                                     actionButton("DC_scriptize", "Go"),
+                                                     uiOutput("DC_scriptize_error")
+                                                     # )
+                                                   ),
+                                                   # tabPanel(
+                                                   # title = "",
+                                                   # width = NULL,
 
-                                               box(
-                                                 title = "Display a script",
-                                                 width = NULL,
-                                                 status = "success",
-                                                 # background = "aqua",
-                                                 solidHeader = TRUE,
-                                                 # script will show upon chosen
-                                                 shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
-                                                 helpText("Full path of your chosen script: "),
+                                                   box(
+                                                     title = "Display a script",
+                                                     width = NULL,
+                                                     status = "success",
+                                                     # background = "aqua",
+                                                     solidHeader = TRUE,
+                                                     # script will show upon chosen
+                                                     shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
+                                                     helpText("Full path of your chosen script: "),
 
-                                                 textOutput("DC_show_chosen_script")
+                                                     textOutput("DC_show_chosen_script")
+                                                   )
+                                                 ),
+                                                 column(width = 6,
+                                                        box(width = NULL,
+
+                                                            uiOutput("DC_ace"),
+                                                            uiOutput("DC_offer_run_decoding"),
+
+                                                            # textinput of filename to be saved if not existing and to be saved as if existing;
+                                                            uiOutput("DC_offer_save_displayed_script")
+                                                        )
+
+
+                                                 )
                                                )
+
+
                                              )
 
-                                      )),
+                                      ))
 
 
-                               column(width = 6,
-                                      box(width = NULL,
 
-                                          uiOutput("DC_ace"),
-                                          uiOutput("DC_offer_run_decoding"),
-
-                                          # textinput of filename to be saved if not existing and to be saved as if existing;
-                                          uiOutput("DC_offer_save_displayed_script")
-                                      )
-
-
-                               )
 
 
                              )
