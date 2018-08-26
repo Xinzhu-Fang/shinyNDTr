@@ -229,8 +229,10 @@ ui <- dashboardPage(
                                                title = "Cross validator",
                                                width = NULL,
                                                solidHeader = TRUE, status = "primary",
+                                               uiOutput("CV_max_repetition_avail"),
                                                numericInput("CV_repeat", lLabels$CV_repeat, value = 2, min = 1),
                                                numericInput("CV_split", lLabels$CV_split, value = 5, min = 2),
+
                                                numericInput("CV_resample", lLabels$CV_resample, value = 20, min = 1),
                                                checkboxInput("CV_bDiag", lLabels$CV_bDiag,TRUE)
                                              ),

@@ -821,6 +821,52 @@ req(rv$mRaster_cur_data)
                  max = reactive_bin_num_neuron() - input$FP_selected_k)
   })
 
+
+  reactive_level_repetition_info <- reactive({
+    NDTr:calc_num_level_repetition(rv$binned_data, )
+  })
+
+  output$CV_max_repetition_avail = renderText({
+req(rv$binned_data)
+
+    if(input$DS_type == "basic_DS"){
+      validate(
+        need(!is.null(input$DS_basic_level_to_use)||input$DS_bUse_all_levels, paste0("You haven't set ",
+                                                                                     lLabels$DS_basic_level_to_use, " yet!"))
+      )
+      if(input$DS_bUse_all_levels){
+        temp_max_rep <-
+        paste0("The maximum repition across ", paste(reactive_all_levels_of_basic_var_to_decode(), collapse = ', '), " as set on the Data Source tab is")
+      } else{
+        paste0("The maximum repition across ", input$DS_basic_level_to_use,
+               " as set on the Data Source tab is")
+      }
+
+
+    } else{
+      temp_training_level_group_ids <- paste0("input$DS_training_level_group_", c(1:input$DS_gen_num_training_level_groups))
+      temp_need <- lapply(temp_training_level_group_ids, function(i){
+        eval(parse(text = paste0("need(", i, ", '", "You need to set ",eval(parse(text = paste0("lLabels$", i))), "')")))
+      })
+      do.call(validate, temp_need)
+
+      temp_training_level_groups <<- lapply(temp_training_level_group_ids, function(i){
+        eval(parse(text = i))
+      })
+
+      paste0("The maximum repition across ", paste(unlist(temp_training_level_groups), collapse = ', '),
+             " as set on the Data Source tab is")
+    }
+
+  })
+
+
+
+
+
+
+
+
   output$DC_show_chosen_script = renderText({
     rv$chosen_script_name
   })
