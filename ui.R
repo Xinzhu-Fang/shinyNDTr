@@ -229,12 +229,25 @@ ui <- dashboardPage(
                                                title = "Cross validator",
                                                width = NULL,
                                                solidHeader = TRUE, status = "primary",
-                                               uiOutput("CV_max_repetition_avail"),
-                                               numericInput("CV_repeat", lLabels$CV_repeat, value = 2, min = 1),
-                                               numericInput("CV_split", lLabels$CV_split, value = 5, min = 2),
+                                                 fluidRow(
+                                                   column(
+                                                     width = 6,
+                                                     uiOutput("CV_max_repetition_avail_with_any_site"),
+                                                    uiOutput("CV_repeat"),
+                                                    uiOutput("CV_split"),
+uiOutput("CV_show_chosen_repetition_info"),
+                                                     numericInput("CV_resample", lLabels$CV_resample, value = 20, min = 1),
+                                                     checkboxInput("CV_bDiag", lLabels$CV_bDiag,TRUE)
+                                                   ),
+                                                   column(
+                                                     width = 6,
+                                                     plotlyOutput("CV_show_level_repetition_info")
+                                                   )
 
-                                               numericInput("CV_resample", lLabels$CV_resample, value = 20, min = 1),
-                                               checkboxInput("CV_bDiag", lLabels$CV_bDiag,TRUE)
+                                                 )
+
+
+
                                              ),
                                              tabPanel(
                                                title = "Script",

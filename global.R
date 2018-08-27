@@ -1,3 +1,6 @@
+# to do
+#
+
 # I am definitely using these
 library('shinydashboard')
 
@@ -6,9 +9,9 @@ library("plotrix")
 library('fields')
 
 # I should use these
-# library('ggplot2')
+library('ggplot2')
 library('dplyr')
-
+library('plotly')
 
 rm(list=ls())
 

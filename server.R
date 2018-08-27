@@ -821,13 +821,8 @@ req(rv$mRaster_cur_data)
                  max = reactive_bin_num_neuron() - input$FP_selected_k)
   })
 
-
-  reactive_level_repetition_info <- reactive({
-    NDTr:calc_num_level_repetition(rv$binned_data, )
-  })
-
-  output$CV_max_repetition_avail = renderText({
-req(rv$binned_data)
+  reactive_DS_levels_to_use <- reactive({
+    req(rv$binned_data)
 
     if(input$DS_type == "basic_DS"){
       validate(
@@ -835,32 +830,93 @@ req(rv$binned_data)
                                                                                      lLabels$DS_basic_level_to_use, " yet!"))
       )
       if(input$DS_bUse_all_levels){
-        temp_max_rep <-
-        paste0("The maximum repition across ", paste(reactive_all_levels_of_basic_var_to_decode(), collapse = ', '), " as set on the Data Source tab is")
+        reactive_all_levels_of_basic_var_to_decode()
+
       } else{
-        paste0("The maximum repition across ", input$DS_basic_level_to_use,
-               " as set on the Data Source tab is")
+        input$DS_basic_level_to_use
+
       }
 
 
     } else{
       temp_training_level_group_ids <- paste0("input$DS_training_level_group_", c(1:input$DS_gen_num_training_level_groups))
       temp_need <- lapply(temp_training_level_group_ids, function(i){
-        eval(parse(text = paste0("need(", i, ", '", "You need to set ",eval(parse(text = paste0("lLabels$", i))), "')")))
+        eval(parse(text = paste0("need(", i, ", '", "You need to set ", eval(parse(text = paste0("lLabels$", i))), "')")))
       })
       do.call(validate, temp_need)
 
-      temp_training_level_groups <<- lapply(temp_training_level_group_ids, function(i){
+      temp_training_level_groups <- lapply(temp_training_level_group_ids, function(i){
         eval(parse(text = i))
       })
+      unlist(temp_training_level_groups)
 
-      paste0("The maximum repition across ", paste(unlist(temp_training_level_groups), collapse = ', '),
-             " as set on the Data Source tab is")
+
     }
 
   })
+  reactive_level_repetition_info <- reactive({
+    req(reactive_DS_levels_to_use())
+
+    if(input$DS_type == "basic_DS"){
+
+      NDTr::calc_num_level_repetitions(rv$binned_data, input$DS_basic_var_to_decode, reactive_DS_levels_to_use())
 
 
+
+    } else{
+
+      NDTr::calc_num_level_repetitions(rv$binned_data, input$DS_gen_var_to_use, reactive_DS_levels_to_use())
+
+    }
+  })
+
+  output$CV_max_repetition_avail_with_any_site <- renderText({
+req(reactive_level_repetition_info())
+    temp_level_repetition_info <- reactive_level_repetition_info()
+
+        paste("Levels chosen for training:", "<font color='red'>", paste(reactive_DS_levels_to_use(), collapse = ', '),"<br/>", "</font>", "The maximum number of repetitions across all the levels for training as set on the Data Source tab is", "<font color='red'>",temp_level_repetition_info$max_repetition_avail_with_any_site, "</font>", ".")
+
+
+  })
+output$CV_show_level_repetition_info <- renderPlotly({
+  req(reactive_level_repetition_info())
+  temp_level_repetition_info <- reactive_level_repetition_info()
+  temp_level_repetition_info$plotly
+})
+reactive_chosen_repetition_info <- reactive({
+  req(input$CV_split, input$CV_repeat, reactive_level_repetition_info())
+  temp_level_repetition_info <- reactive_level_repetition_info()
+
+  list(num_repetition = input$CV_repeat * input$CV_split,
+       num_sites_avail = nrow(filter(temp_level_repetition_info$num_repeats_across_levels_per_site, min_repeats >= input$CV_repeat * input$CV_split)))
+})
+
+output$CV_repeat <- renderUI({
+  # browser()
+
+    numericInput("CV_repeat", lLabels$CV_repeat, value = 2, min = 1)
+})
+
+output$CV_split <- renderUI({
+
+    numericInput("CV_split", lLabels$CV_split, value = 5, min = 2)
+
+
+})
+
+observe({
+  req(reactive_level_repetition_info())
+  temp_level_repetition_info <- reactive_level_repetition_info()
+  updateNumericInput(session, "CV_repeat", max = floor(temp_level_repetition_info$max_repetition_avail_with_any_site/input$CV_split))
+  updateNumericInput(session, "CV_split", max = floor(temp_level_repetition_info$max_repetition_avail_with_any_site/input$CV_repeat))
+})
+
+
+output$CV_show_chosen_repetition_info <- renderText({
+  req(reactive_chosen_repetition_info())
+  temp_chosen_repetition_info <- reactive_chosen_repetition_info()
+paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "of all levels as set on the Data Source tab, which renders the totol number of neurons available for decoding to be", "<font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", ".")
+})
 
 
 
