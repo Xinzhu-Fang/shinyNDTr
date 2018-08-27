@@ -27,12 +27,14 @@ ui <- dashboardPage(
                              fluidRow(
                                column(width = 12,
                                       box(width = NULL,
+                                          status = "danger",
+                                          solidHeader = TRUE,
+                                          title = "Choose a directory of raster data files",
 
+                                          shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, ""),
                                           helpText("Full path of your chosen directory of raster data: "),
 
-                                          textOutput("bin_show_chosen_raster"),
-
-                                          shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, "")
+                                          textOutput("bin_show_chosen_raster")
                                       ),
                                       box(width = 8,
 
@@ -132,175 +134,178 @@ ui <- dashboardPage(
                                column(width = 12,
                                       tabBox(width = 12,
 
-                                             # tabPanel(
-                                             #   title = "Upload new binned data",
-                                             #   width = NULL,
-                                             #   solidHeader = TRUE, status = "primary",
-                                             #   uiOutput("DS_offer_upload_bin")
-                                             #
-                                             # ),
-                                             tabPanel(
-                                               title = "Data source",
-                                               width = NULL,
-                                               solidHeader = TRUE,
-                                               status = "primary",
-                                               box(
-                                                 width = NULL,
-                                                 helpText("Full path of your chosen binned data file: "),
+                                          # tabPanel(
+                                          #   title = "Upload new binned data",
+                                          #   width = NULL,
+                                          #   solidHeader = TRUE, status = "primary",
+                                          #   uiOutput("DS_offer_upload_bin")
+                                          #
+                                          # ),
+                                          tabPanel(
+                                            title = "Data source",
+                                            width = NULL,
+                                            solidHeader = TRUE,
+                                            status = "primary",
+                                            box(
+                                              width = NULL,
+                                              title = "Choose a binned data file",
+                                              status = "danger",
+                                              solidHeader = TRUE,
+                                              shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE),
+                                              helpText("Full path of your chosen binned data file: "),
 
-                                                 textOutput("DS_show_chosen_bin"),
-                                                 shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE)
+                                              textOutput("DS_show_chosen_bin")
 
-                                               ),
-
-
-                                               selectInput("DS_type", lLabels$DS_type, c("basic_DS","generalization_DS")),
-
-
-
-                                               conditionalPanel(condition = "input.DS_type == 'basic_DS'",
-                                                                uiOutput("DS_basic_list_of_var_to_decode"),
-
-                                                                checkboxInput("DS_bUse_all_levels", "Use all the levels of this variable?", TRUE)
-                                               ),
-                                               conditionalPanel(condition = "!input.DS_bUse_all_levels && input.DS_type == 'basic_DS'",
-                                                                uiOutput("DS_basic_list_of_levels_to_use")),
+                                            ),
 
 
-                                               conditionalPanel(condition = "input.DS_type == 'generalization_DS'",
-                                                                uiOutput("DS_gen_list_of_var_to_decode"),
-                                                                uiOutput("DS_gen_list_of_var_to_use"),
-                                                                uiOutput("DS_gen_select_num_of_groups"),
-                                                                uiOutput("DS_gen_list_of_training_level_groups")#,
-                                                                # uiOutput("DS_gen_list_of_testing_level_groups")
-                                               )
-                                             ),
-
-                                             tabPanel(
-                                               title = "Classifier",
-                                               width = NULL,
-                                               solidHeader = TRUE, status = "primary",
-                                               selectInput("CL", "Classifier", all_cl),
-                                               box(
-                                                 width = NULL,
-                                                 title = "Additional parameters (if applicable)",
-                                                 conditionalPanel(condition  = "input.CL == 'svm_CL'",
-                                                                  selectInput("CL_SVM_kernel",
-                                                                              lLabels$CL_SVM_kernel,
-                                                                              c("linear", "polynomial", "radial", "sigmoid"),
-                                                                              selected = "linear"),
-                                                                  numericInput("CL_SVM_cost",
-                                                                               lLabels$CL_SVM_cost, # of constraints violation / inverse of regularization constant",
-                                                                               1,
-                                                                               min = 0
-                                                                  ),
-                                                                  conditionalPanel(condition ="input.CL_SVM_kernel == 'polynomial'",
-                                                                                   numericInput("CL_SVM_degree",
-                                                                                                lLabels$CL_SVM_degree,
-                                                                                                3,
-                                                                                                min = 2,
-                                                                                                max  = 10)),
-
-
-                                                                  conditionalPanel(condition = "input.CL_SVM_kernel == 'radial'|input.CL_SVM_kernel == 'polynomial'",
-                                                                                   numericInput("CL_SVM_coef0",
-                                                                                                lLabels$CL_SVM_coef0, # Constant in the kernel function",
-                                                                                                0)),
-                                                                  conditionalPanel(condition = "input.CL_SVM_kernel == 'radial'|input.CL_SVM_kernel == 'polynomial'|input.CL_SVM_kernel == 'sigmoid'",
-                                                                                   numericInput("CL_SVM_gamma",
-                                                                                                lLabels$CL_SVM_gamma,
-                                                                                                NULL)
-                                                                  )
-                                                 ))
-
-                                             ),
-                                             tabPanel(
-                                               title = "Feature preprocessors",
-                                               width = NULL,
-                                               solidHeader = TRUE, status = "primary",
-
-                                               uiOutput("FP_check_fp"),
-                                               uiOutput("FP_select_k_features"),
-                                               uiOutput("FP_exclude_k_features")
-
-
-                                             ),
-                                             tabPanel(
-                                               title = "Cross validator",
-                                               width = NULL,
-                                               solidHeader = TRUE, status = "primary",
-                                                 fluidRow(
-                                                   column(
-                                                     width = 6,
-                                                     uiOutput("CV_max_repetition_avail_with_any_site"),
-                                                    uiOutput("CV_repeat"),
-                                                    uiOutput("CV_split"),
-uiOutput("CV_show_chosen_repetition_info"),
-                                                     numericInput("CV_resample", lLabels$CV_resample, value = 20, min = 1),
-                                                     checkboxInput("CV_bDiag", lLabels$CV_bDiag,TRUE)
-                                                   ),
-                                                   column(
-                                                     width = 6,
-                                                     plotlyOutput("CV_show_level_repetition_info")
-                                                   )
-
-                                                 )
+                                            selectInput("DS_type", lLabels$DS_type, c("basic_DS","generalization_DS")),
 
 
 
-                                             ),
-                                             tabPanel(
-                                               title = "Script",
-                                               width = NULL,
-                                               fluidRow(
-                                                 column(
-                                                   width = 6,
-                                                   box(
-                                                     title = lLabels$DC_scriptize,
-                                                     width = NULL,
-                                                     status = "danger",
-                                                     # background = "red",
-                                                     solidHeader = TRUE,
+                                            conditionalPanel(condition = "input.DS_type == 'basic_DS'",
+                                                             uiOutput("DS_basic_list_of_var_to_decode"),
 
-                                                     helpText("If you choose to generate the script in R Markdown, to run the script first save it"),
-                                                     radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "r"),
-                                                     actionButton("DC_scriptize", "Go"),
-                                                     uiOutput("DC_scriptize_error")
-                                                     # )
-                                                   ),
-                                                   # tabPanel(
-                                                   # title = "",
-                                                   # width = NULL,
-
-                                                   box(
-                                                     title = "Display a script",
-                                                     width = NULL,
-                                                     status = "success",
-                                                     # background = "aqua",
-                                                     solidHeader = TRUE,
-                                                     # script will show upon chosen
-                                                     shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
-                                                     helpText("Full path of your chosen script: "),
-
-                                                     textOutput("DC_show_chosen_script")
-                                                   )
-                                                 ),
-                                                 column(width = 6,
-                                                        box(width = NULL,
-
-                                                            uiOutput("DC_ace"),
-                                                            uiOutput("DC_offer_run_decoding"),
-
-                                                            # textinput of filename to be saved if not existing and to be saved as if existing;
-                                                            uiOutput("DC_offer_save_displayed_script")
-                                                        )
+                                                             checkboxInput("DS_bUse_all_levels", "Use all the levels of this variable?", TRUE)
+                                            ),
+                                            conditionalPanel(condition = "!input.DS_bUse_all_levels && input.DS_type == 'basic_DS'",
+                                                             uiOutput("DS_basic_list_of_levels_to_use")),
 
 
-                                                 )
-                                               )
+                                            conditionalPanel(condition = "input.DS_type == 'generalization_DS'",
+                                                             uiOutput("DS_gen_list_of_var_to_decode"),
+                                                             uiOutput("DS_gen_list_of_var_to_use"),
+                                                             uiOutput("DS_gen_select_num_of_groups"),
+                                                             uiOutput("DS_gen_list_of_training_level_groups")#,
+                                                             # uiOutput("DS_gen_list_of_testing_level_groups")
+                                            )
+                                          ),
+
+                                          tabPanel(
+                                            title = "Classifier",
+                                            width = NULL,
+                                            solidHeader = TRUE, status = "primary",
+                                            selectInput("CL", "Classifier", all_cl),
+                                            box(
+                                              width = NULL,
+                                              title = "Additional parameters (if applicable)",
+                                              conditionalPanel(condition  = "input.CL == 'svm_CL'",
+                                                               selectInput("CL_SVM_kernel",
+                                                                           lLabels$CL_SVM_kernel,
+                                                                           c("linear", "polynomial", "radial", "sigmoid"),
+                                                                           selected = "linear"),
+                                                               numericInput("CL_SVM_cost",
+                                                                            lLabels$CL_SVM_cost, # of constraints violation / inverse of regularization constant",
+                                                                            1,
+                                                                            min = 0
+                                                               ),
+                                                               conditionalPanel(condition ="input.CL_SVM_kernel == 'polynomial'",
+                                                                                numericInput("CL_SVM_degree",
+                                                                                             lLabels$CL_SVM_degree,
+                                                                                             3,
+                                                                                             min = 2,
+                                                                                             max  = 10)),
 
 
-                                             )
+                                                               conditionalPanel(condition = "input.CL_SVM_kernel == 'radial'|input.CL_SVM_kernel == 'polynomial'",
+                                                                                numericInput("CL_SVM_coef0",
+                                                                                             lLabels$CL_SVM_coef0, # Constant in the kernel function",
+                                                                                             0)),
+                                                               conditionalPanel(condition = "input.CL_SVM_kernel == 'radial'|input.CL_SVM_kernel == 'polynomial'|input.CL_SVM_kernel == 'sigmoid'",
+                                                                                numericInput("CL_SVM_gamma",
+                                                                                             lLabels$CL_SVM_gamma,
+                                                                                             NULL)
+                                                               )
+                                              ))
+
+                                          ),
+                                          tabPanel(
+                                            title = "Feature preprocessors",
+                                            width = NULL,
+                                            solidHeader = TRUE, status = "primary",
+
+                                            uiOutput("FP_check_fp"),
+                                            uiOutput("FP_select_k_features"),
+                                            uiOutput("FP_exclude_k_features")
+
+
+                                          ),
+                                          tabPanel(
+                                            title = "Cross validator",
+                                            width = NULL,
+                                            solidHeader = TRUE, status = "primary",
+                                            fluidRow(
+                                              column(
+                                                width = 6,
+                                                uiOutput("CV_max_repetition_avail_with_any_site"),
+                                                uiOutput("CV_repeat"),
+                                                uiOutput("CV_split"),
+                                                uiOutput("CV_show_chosen_repetition_info"),
+                                                numericInput("CV_resample", lLabels$CV_resample, value = 20, min = 1),
+                                                checkboxInput("CV_bDiag", lLabels$CV_bDiag,TRUE)
+                                              ),
+                                              column(
+                                                width = 6,
+                                                plotlyOutput("CV_show_level_repetition_info")
+                                              )
+
+                                            )
+
+
+
+                                          ),
+                                          tabPanel(
+                                            title = "Script",
+                                            width = NULL,
+                                            fluidRow(
+                                              column(
+                                                width = 6,
+                                                box(
+                                                  title = lLabels$DC_scriptize,
+                                                  width = NULL,
+                                                  status = "danger",
+                                                  # background = "red",
+                                                  solidHeader = TRUE,
+
+                                                  helpText("A markdown has to be saved before running"),
+                                                  radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "r"),
+                                                  actionButton("DC_scriptize", "Go"),
+                                                  uiOutput("DC_scriptize_error")
+                                                  # )
+                                                ),
+                                                # tabPanel(
+                                                # title = "",
+                                                # width = NULL,
+
+                                                box(
+                                                  title = "Load a pre-existing script",
+                                                  width = NULL,
+                                                  status = "success",
+                                                  # background = "aqua",
+                                                  solidHeader = TRUE,
+                                                  # script will show upon chosen
+                                                  shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
+                                                  helpText("Full path of your chosen script: "),
+
+                                                  textOutput("DC_show_chosen_script")
+                                                )
+                                              ),
+                                              column(width = 6,
+                                                     box(width = NULL,
+
+                                                         uiOutput("DC_ace"),
+                                                         uiOutput("DC_offer_run_decoding"),
+
+                                                         # textinput of filename to be saved if not existing and to be saved as if existing;
+                                                         uiOutput("DC_offer_save_displayed_script")
+                                                     )
+
+
+                                              )
+                                            )
+
+
+                                          )
 
                                       ))
 

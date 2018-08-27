@@ -41,7 +41,7 @@ function(input, output, session) {
   rv$binned_all_var <- NULL
 
   rv$displayed_script_base_dir <- script_base_dir
-  rv$chosen_script_name <- NULL
+  rv$chosen_script_name <- "No script chosen yet"
   rv$displayed_script <- ""
 
   rv$result_base_dir <- result_base_dir
@@ -308,17 +308,16 @@ print(typeof(input$bin_bin_data))
 
   rv_para <- reactiveValues()
 
-  rv_para$computed <- 1
+  # decoding_para_id changes. This is used by observerEvent who figures out the ids to signal eventReactive to check if they are in position
+  rv_para$decoding_para_id_computed <- 1
 
 
 
   observeEvent(input$DC_scriptize,{
 
-    # observe({
     # refresh rv_para$id
     rv_para$id <-  c("DS_chosen_bin", "DS_type","CL", "CV_repeat", "CV_resample","CV_split", "DC_result_name")
     # rv_para$id <-  c("rv$binned_file_name", "DS_type","CL", "CV_repeat", "CV_resample","CV_split", "DC_result_name")
-    # oberveEvent is executed before eventReactive
     if(input$DS_type == "basic_DS"){
       rv_para$id <- c(rv_para$id,"DS_basic_var_to_decode")
       if(!input$DS_bUse_all_levels){
@@ -331,7 +330,7 @@ print(typeof(input$bin_bin_data))
 
     rv_para$inputID <- paste0("input$", rv_para$id)
 
-    rv_para$computed <- rv_para$computed * (-1)
+    rv_para$decoding_para_id_computed <- rv_para$decoding_para_id_computed * (-1)
     eval(parse(text = paste0("req(", rv_para$inputID, ")")))
     #     # !
     # do.call(req, as.list(rv_para$inputID))
@@ -374,11 +373,13 @@ print(typeof(input$bin_bin_data))
   })
 
 
-  er_scriptize_action_error <- eventReactive(rv_para$computed,{
-
-    # print(rv_para$id)
+  er_scriptize_action_error <- eventReactive(rv_para$decoding_para_id_computed,{
+# if we don't have this line, this function will be called as soon as users click the script tab because rv_para$decoding_para_id_computed is going from NULL to 1 (I think)
+    req(rv_para$id)
     # my_decoding_paras <<- paste0("my_",decoding_paras)
-
+validate(
+  need(input$DS_chosen_binned, "Did you not even choose the binned data?")
+)
     temp_need = lapply(rv_para$id, function(i){
       eval(parse(text = paste0("need(input$", i, ", '", "You need to set ",eval(parse(text = paste0("lLabels$", i))), "')")))
     })
