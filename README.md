@@ -3,7 +3,7 @@
 
 
 ## Getting started
-* `install.packages(c("yaml","digest", "devtools", "curl")`, which provide you with the basic tools for package development"
+* `install.packages(c("yaml","digest", "devtools", "curl"))`, which provide you with the basic tools for package development"
 * For developlers:
    * Assume you working directory is a GitHub directory of all git repos
    1. `git clone https://github.com/Xinzhu-Fang/shinyNDTr.git`
