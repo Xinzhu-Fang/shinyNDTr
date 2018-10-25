@@ -9,12 +9,7 @@ function(input, output, session) {
   # shinyDirChoose(input, "bin_chosen_raster")
 
 
-  # !
-  state_base_dir <- file.path(eval(getwd()))
-  raster_base_dir <- file.path(eval(getwd()),'../NDTr/data/raster') #"."
-  bin_base_dir <- file.path(eval(getwd()),'../NDTr/data/binned') #"."
-  script_base_dir <- file.path(eval(getwd()),'../NDTr/tests') #"."
-  result_base_dir <- file.path(eval(getwd()),'../NDTr/results') #"."
+
 
   rv <- reactiveValues()
 
@@ -223,7 +218,7 @@ observe({
 
   observeEvent(input$DC_save_displayed_script,{
     req(input$DC_displayed_script_name, rv$displayed_script)
-    file.create(input$DC_displayed_script_name, overwrite = TRUE)
+    file.create(file.path(script_base_dir, input$DC_displayed_script_name), overwrite = TRUE)
     write(rv$displayed_script, file = input$DC_displayed_script_name)
   })
 
@@ -378,7 +373,7 @@ print(typeof(input$bin_bin_data))
     req(rv_para$id)
     # my_decoding_paras <<- paste0("my_",decoding_paras)
 validate(
-  need(input$DS_chosen_binned, "Did you not even choose the binned data?")
+  need(input$DS_chosen_bin, "Did you not even choose the binned data?")
 )
     temp_need = lapply(rv_para$id, function(i){
       eval(parse(text = paste0("need(input$", i, ", '", "You need to set ",eval(parse(text = paste0("lLabels$", i))), "')")))
@@ -571,9 +566,11 @@ validate(
 
 
 
+
+
   output$DC_offer_save_displayed_script = renderUI({
     list(
-      textInput("DC_displayed_script_name", lLabels$DC_displayed_script_name, rv$displayed_script_base_dir),
+      textInput("DC_displayed_script_name", lLabels$DC_displayed_script_name),
       actionButton("DC_save_displayed_script", "Save the script"),
       uiOutput("DC_save_displayed_script_error")
     )
@@ -583,7 +580,10 @@ validate(
   output$DC_offer_run_decoding = renderUI({
     list(
 
-      textInput("DC_result_name", lLabels$DC_result_name, rv$result_base_dir),
+      textInput("DC_result_name", lLabels$DC_result_name),
+      actionButton("DC_scriptize", lLabels$DC_scriptize),
+      uiOutput("DC_scriptize_error"),
+      helpText(""),
       actionButton("DC_run_decoding", lLabels$DC_run_decoding),
       uiOutput("DC_run_decoding_error")
     )
@@ -640,7 +640,7 @@ validate(
   output$bin_show_chosen_raster = renderText({
     # temp_text = "Chose raster"
     # rv$raster_cur_dir_name <- parseDirPath(c(wd=eval(getwd())),input$bin_chosen_raster)
-    rv$raster_cur_dir_name
+    basename(rv$raster_cur_dir_name)
   })
 
   output$bin_show_raster_cur_file_name = renderText({
@@ -696,7 +696,7 @@ req(rv$mRaster_cur_data)
 
   output$DS_show_chosen_bin = renderText({
 
-    rv$binned_file_name
+    basename(rv$binned_file_name)
   })
 
   output$DS_basic_list_of_var_to_decode = renderUI({
@@ -916,7 +916,7 @@ observe({
 output$CV_show_chosen_repetition_info <- renderText({
   req(reactive_chosen_repetition_info())
   temp_chosen_repetition_info <- reactive_chosen_repetition_info()
-paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "of all levels as set on the Data Source tab, which renders the totol number of neurons available for decoding to be", "<font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", ".")
+paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "trials of all levels as set on the Data Source tab, which renders the totol number of neurons available for decoding to be", "<font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", ".")
 })
 
 
@@ -925,7 +925,7 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
 
 
   output$DC_show_chosen_script = renderText({
-    rv$chosen_script_name
+    basename(rv$chosen_script_name)
   })
 
   output$DC_ace = renderUI({

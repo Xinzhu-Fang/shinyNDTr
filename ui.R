@@ -32,7 +32,7 @@ ui <- dashboardPage(
                                           title = "Choose a directory of raster data files",
 
                                           shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, ""),
-                                          helpText("Full path of your chosen directory of raster data: "),
+                                          helpText("Name of your chosen directory of raster data: "),
 
                                           textOutput("bin_show_chosen_raster")
                                       ),
@@ -152,7 +152,7 @@ ui <- dashboardPage(
                                               status = "danger",
                                               solidHeader = TRUE,
                                               shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE),
-                                              helpText("Full path of your chosen binned data file: "),
+                                              helpText("Name of your chosen binned data file: "),
 
                                               textOutput("DS_show_chosen_bin")
 
@@ -255,22 +255,22 @@ ui <- dashboardPage(
 
                                           ),
                                           tabPanel(
-                                            title = "Script",
+                                            title = "Decoder",
                                             width = NULL,
                                             fluidRow(
                                               column(
                                                 width = 6,
                                                 box(
-                                                  title = lLabels$DC_scriptize,
+                                                  #title = "",
                                                   width = NULL,
                                                   status = "danger",
                                                   # background = "red",
-                                                  solidHeader = TRUE,
+                                                  #solidHeader = TRUE,
 
                                                   helpText("A markdown has to be saved before running"),
                                                   radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "r"),
-                                                  actionButton("DC_scriptize", "Go"),
-                                                  uiOutput("DC_scriptize_error")
+                                                  uiOutput("DC_offer_run_decoding")
+
                                                   # )
                                                 ),
                                                 # tabPanel(
@@ -285,7 +285,7 @@ ui <- dashboardPage(
                                                   solidHeader = TRUE,
                                                   # script will show upon chosen
                                                   shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
-                                                  helpText("Full path of your chosen script: "),
+                                                  helpText("Name of your chosen script: "),
 
                                                   textOutput("DC_show_chosen_script")
                                                 )
@@ -294,10 +294,10 @@ ui <- dashboardPage(
                                                      box(width = NULL,
 
                                                          uiOutput("DC_ace"),
-                                                         uiOutput("DC_offer_run_decoding"),
-
                                                          # textinput of filename to be saved if not existing and to be saved as if existing;
                                                          uiOutput("DC_offer_save_displayed_script")
+
+
                                                      )
 
 

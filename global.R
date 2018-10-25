@@ -24,6 +24,12 @@ options(shiny.maxRequestSize=1000*1024^2)
 # setwd("../NDTr")
 # setwd("C:/Users/14868/Documents/GitHub/NDTr")
 # setwd("/cbcl/cbcl01/xf15/NDTr")
+# !
+state_base_dir <- file.path(eval(getwd()))
+raster_base_dir <- file.path(eval(getwd()),'data/raster') #"."
+bin_base_dir <- file.path(eval(getwd()),'data/binned') #"."
+script_base_dir <- file.path(eval(getwd()),'scripts') #"."
+result_base_dir <- file.path(eval(getwd()),'results') #"."
 
 # all_cl <- c("maximum correlation", "support vecotor machine", "poisson naive bayes")
 # all_fp <- c("select_pvalue_significant_features","select or exclude top k features", "zscore_normalize")
@@ -64,7 +70,7 @@ input_id <- c("home_state_name","home_loaded_state","home_save_state","Plot_chos
   "script", "sidebarCollapsed", "sidebarItemExpanded")
 
 
-input_label <- c("Where the current state should be saved (e.g., state_01.Rda)","Load a pre-existing state","Save the current state","Choose the result to plot", "Where you want the result to be saved (e.g., ZD_001.Rda)","File type for generated script","Where you want the displayed script to be saved (e.g., ZD_01.Rmd)", "Save to disk","Save to disk","Save to disk",
+input_label <- c("File name of the current state should be saved (e.g., state_01.Rda)","Load a pre-existing state","Save the current state","Choose the result to plot", "File name of the result to be saved (e.g., ZD_001.Rda)","File type for generated script","File name of the displayed script to be saved (e.g., ZD_01.Rmd)", "Save to disk","Save to disk","Save to disk",
   "Create raster",
                  "Bin the data", "Bin width", "Plot the data? (only for spike trains in .Rda file)", "Browse",
                  "Index of the sample where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD)",
@@ -74,7 +80,7 @@ input_label <- c("Where the current state should be saved (e.g., state_01.Rda)",
                  "Upload a zipped file raster data (optional)", "Where you want the file to be unzipped",
                  "Classifier", "Coef0", "Cost", "Degree of polynomial",
                  "Gamma", "Kernel", "Test only at training times?", "Number of repeats of each level in each CV split", "Number of resampling runs",
-                 "Number of cross validation split", "Browse","Run decoding", "Save the script", "Generate script from gui configuration",
+                 "Number of cross validation split", "Browse","Run decoding", "Save the script", "Generate script",
                  "Upload new script (optional)","Where you want this file to be saved", "Levels to use", "Variable to decode and to use", "Use all the levels of this variable?",
                  "Browse", "How many training level groups you will use?",  "Variable to decode",
                  "Variable to use", "Type of data source", "Upload new binned data (optional)", "Where you want this file to be saved", "Feature Preprocessors", "exclude top ? features (this will be applied second)",
@@ -96,12 +102,21 @@ temp_decoding_paras_id <<- c("CL", "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree
 
 temp_decoding_paras_input_id <<- paste0("input$", temp_decoding_paras_id)
 
+
+
 move_file <- function(from, to) {
   todir <- dirname(to)
   if (!isTRUE(file.info(todir)$isdir)) dir.create(todir, recursive=TRUE)
   file.rename(from = from,  to = to)
 }
 
+preprocess_paras <- function(my_decoding_paras){
+  print("attach path")
+
+  my_decoding_paras$DC_result_name <- file.path(result_base_dir,my_decoding_paras$DC_result_name)
+
+  return(my_decoding_paras)
+}
 
 
 
@@ -112,7 +127,7 @@ create_script_in_rmd <- function(my_decoding_paras, rv) {
 
   print(names(my_decoding_paras))
 
-
+  my_decoding_paras = preprocess_paras(my_decoding_paras)
 
 
   my_text = ""
@@ -194,7 +209,7 @@ create_script_in_rmd <- function(my_decoding_paras, rv) {
 
 
   my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n")
-  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '", my_decoding_paras$DC_result_name, "')")
+  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '", my_decoding_paras$DC_result_name, "')\n")
 
 
   my_text = paste0(my_text, "```\n")
@@ -213,8 +228,7 @@ create_script_in_r <- function(my_decoding_paras, rv) {
 
   print(names(my_decoding_paras))
 
-
-
+  my_decoding_paras = preprocess_paras(my_decoding_paras)
 
   my_text = ""
 
@@ -296,7 +310,7 @@ create_script_in_r <- function(my_decoding_paras, rv) {
 
   my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n")
 
-  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '", my_decoding_paras$DC_result_name, "')")
+  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '",my_decoding_paras$DC_result_name, "')")
 
   # my_text = paste0(my_text, "```\n")
 
@@ -305,3 +319,5 @@ create_script_in_r <- function(my_decoding_paras, rv) {
   return(my_text)
 
 }
+
+
