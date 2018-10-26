@@ -40,7 +40,7 @@ function(input, output, session) {
   rv$displayed_script <- ""
 
   rv$result_base_dir <- result_base_dir
-  rv$result_file_name <- NULL
+  rv$result_file_name <- NA
   rv$result_data <- NULL
   # only files meet specified files types will be shown. However, such dir shown as empty can still be choosed
 
@@ -189,7 +189,7 @@ observe({
     req(input$DC_result_name)
     if(input$DC_script_mode == "markdown"){
       print(update)
-      updateTextInput(session, "DC_to_be_saved_script_name", value = paste0(substr(input$DC_result_namee, 1,nchar(input$DC_result_name)-3), "Rmd"))
+      updateTextInput(session, "DC_to_be_saved_script_name", value = paste0(substr(input$DC_result_name, 1,nchar(input$DC_result_name)-3), "Rmd"))
     } else{
       updateTextInput(session, "DC_to_be_saved_script_name", value = paste0(substr(input$DC_result_name, 1,nchar(input$DC_result_name)-3), "R"))
     }
@@ -232,7 +232,7 @@ observe({
   observeEvent(input$DC_save_displayed_script,{
     req(input$DC_to_be_saved_script_name, rv$displayed_script)
     file.create(file.path(script_base_dir, input$DC_to_be_saved_script_name), overwrite = TRUE)
-    write(rv$displayed_script, file = input$DC_to_be_saved_script_name)
+    write(rv$displayed_script, file = file.path(script_base_dir,input$DC_to_be_saved_script_name))
   })
 
   rv$script_rmd_not_saved_yet <- 1
@@ -247,7 +247,7 @@ observe({
 
     req(input$DC_to_be_saved_script_name, rv$displayed_script)
     file.create(file.path(script_base_dir, input$DC_to_be_saved_script_name), overwrite = TRUE)
-    write(rv$displayed_script, file = input$DC_to_be_saved_script_name)
+    write(rv$displayed_script, file = file.path(script_base_dir,input$DC_to_be_saved_script_name))
 
     if(input$DC_script_mode == "markdown"){
 
@@ -255,13 +255,13 @@ observe({
       # if(!(file.exists(input$DC_to_be_saved_script_name) && tools::file_ext(input$DC_to_be_saved_script_name) == "Rmd" || tools::file_ext(input$DC_to_be_saved_script_name) == "rmd" )){
       #   rv$script_rmd_not_saved_yet <- rv$script_rmd_not_saved_yet * (-1)
       # } else{
-      rmarkdown::render(input$DC_to_be_saved_script_name)
+      rmarkdown::render(file.path(script_base_dir,input$DC_to_be_saved_script_name), "pdf_document")
 
       # }
 
     } else{
       # eval(parse(text = rv$displayed_script))
-      source(input$DC_to_be_saved_script_name)
+      source(file.path(script_base_dir,input$DC_to_be_saved_script_name))
 
     }
   })
@@ -543,11 +543,11 @@ validate(
     er_DS_save_binned_to_disk_error()
 
   })
-  output$DC_save_script_to_disk_error = renderUI({
-
-    er_DC_save_script_to_disk_error()
-
-  })
+  # output$DC_save_script_to_disk_error = renderUI({
+  #
+  #   er_DC_save_script_to_disk_error()
+  #
+  # })
 
   output$DC_save_displayed_script_error = renderUI({
     er_DC_save_displayed_script_error()
@@ -669,7 +669,7 @@ validate(
     # temp_text = "Chose raster"
     # rv$raster_cur_dir_name <- parseDirPath(c(wd=eval(getwd())),input$bin_chosen_raster)
     if(is.na(rv$raster_cur_dir_name)){
-      "raster_cur_dir_name"
+      "No file chosen yet"
     } else{
       basename(rv$raster_cur_dir_name)
 
@@ -974,6 +974,18 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
 
 
   })
+
+  output$Plot_show_chosen_result = renderText({
+    # temp_text = "Chose result"
+    # rv$result_cur_dir_name <- parseDirPath(c(wd=eval(getwd())),input$Plot_chosen_result)
+    if(is.na(rv$result_file_name)){
+      "No file chosen yet"
+    } else{
+      basename(rv$result_file_name)
+
+    }
+  })
+
 
   output$timeseries = renderPlot({
     req(rv$result_data)

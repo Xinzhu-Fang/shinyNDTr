@@ -32,7 +32,7 @@ ui <- dashboardPage(
                                           title = "Choose a directory of raster data files",
 
                                           shinyFiles::shinyDirButton("bin_chosen_raster", lLabels$bin_chosen_raster, ""),
-                                          helpText("Name of your chosen directory of raster data: "),
+                                          helpText("Loaded raster data: "),
 
                                           textOutput("bin_show_chosen_raster")
                                       ),
@@ -152,7 +152,7 @@ ui <- dashboardPage(
                                               status = "danger",
                                               solidHeader = TRUE,
                                               shinyFiles::shinyFilesButton("DS_chosen_bin", lLabels$DS_chosen_bin, "", multiple = FALSE),
-                                              helpText("Name of your chosen binned data file: "),
+                                              helpText("Loaded binned data: "),
 
                                               textOutput("DS_show_chosen_bin")
 
@@ -261,17 +261,18 @@ ui <- dashboardPage(
                                               column(
                                                 width = 6,
                                                 box(
-                                                  title = "Generate a new script",
+                                                  title = "Create a new script",
                                                   width = NULL,
                                                   status = "danger",
                                                   # background = "red",
-                                                  #solidHeader = TRUE,
+                                                  solidHeader = TRUE,
 
 
                                                   radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "r"),
                                                   uiOutput("DC_offer_scriptize"),
                                                   # textinput of filename to be saved if not existing and to be saved as if existing;
                                                   uiOutput("DC_offer_save_displayed_script"),
+                                                  helpText("  or"),
                                                   uiOutput("DC_offer_run_decoding")
 
                                                   # )
@@ -288,7 +289,7 @@ ui <- dashboardPage(
                                                   solidHeader = TRUE,
                                                   # script will show upon chosen
                                                   shinyFiles::shinyFilesButton("DC_chosenscript_name", lLabels$DC_chosenscript_name, "", multiple = FALSE),
-                                                  helpText("Name of your chosen script: "),
+                                                  helpText("Displayed script: "),
 
                                                   textOutput("DC_show_chosen_script")
                                                 )
@@ -337,9 +338,14 @@ ui <- dashboardPage(
                            column(width = 12,
                                   #issue cannot make use of the large blank on the right
                                   box(
-                                    title = NULL,
+                                    title = "Choose the result to plot",
                                     width = NULL,
-                                    shinyFiles::shinyFilesButton("Plot_chosen_result", lLabels$Plot_chosen_result, "", multiple = FALSE)
+                                    status = "danger",
+                                    solidHeader = TRUE,
+                                    shinyFiles::shinyFilesButton("Plot_chosen_result", lLabels$Plot_chosen_result, "", multiple = FALSE),
+                                    helpText("Loaded result: "),
+                                    textOutput("Plot_show_chosen_result")
+
 
                                   ),
                                   tabBox(width = NULL,
