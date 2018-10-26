@@ -36,7 +36,7 @@ function(input, output, session) {
   rv$binned_all_var <- NULL
 
   rv$script_base_dir <- script_base_dir
-  rv$DC_to_be_displayed_script_name <- "No script chosen yet"
+  rv$DC_chosenscript_name <- "No script chosen yet"
   rv$displayed_script <- ""
 
   rv$result_base_dir <- result_base_dir
@@ -47,7 +47,7 @@ function(input, output, session) {
   shinyFiles::shinyFileChoose(input, "home_loaded_state", roots = c(wd=state_base_dir), filetypes = "Rda")
   shinyFiles::shinyDirChoose(input, "bin_chosen_raster", roots = c(wd=raster_base_dir), filetypes = c("mat", "Rda"))
   shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=binned_base_dir), filetypes = "Rda")
-  shinyFiles::shinyFileChoose(input, "DC_to_be_displayed_script_name", root =c(wd=script_base_dir, filetypes = c("R", "Rmd")))
+  shinyFiles::shinyFileChoose(input, "DC_chosenscript_name", root =c(wd=script_base_dir, filetypes = c("R", "Rmd")))
   shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_dir), filetypes = "Rda")
 
   output$home_offer_save_state = renderUI({
@@ -161,16 +161,16 @@ observe({
   observe({
     print("do?")
 
-    req(input$DC_to_be_displayed_script_name)
+    req(input$DC_chosenscript_name)
 
     print("do!")
 
-    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$script_base_dir),input$DC_to_be_displayed_script_name)
+    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$script_base_dir),input$DC_chosenscript_name)
     # print(temp_df_file)
     req(temp_df_file$datapath)
-    rv$DC_to_be_displayed_script_name <- temp_df_file$datapath
-    rv$displayed_script <- readChar(rv$DC_to_be_displayed_script_name, file.info(rv$DC_to_be_displayed_script_name)$size)
-    updateTextInput(session, "DC_displayed_script_name", value = rv$DC_to_be_displayed_script_name)
+    rv$DC_chosenscript_name <- temp_df_file$datapath
+    rv$displayed_script <- readChar(rv$DC_chosenscript_name, file.info(rv$DC_chosenscript_name)$size)
+    updateTextInput(session, "DC_chosenscript_name", value = rv$DC_chosenscript_name)
   })
 
   # when unzip a file, the new file is unzipped to exdir with origianl name, thus there is no need to update input with chosen file name
@@ -183,15 +183,17 @@ observe({
   # })
 
 
+
   observe({
-    req(input$DC_to_be_saved_script_name)
+
+    req(input$DC_result_name)
     if(input$DC_script_mode == "markdown"){
-      updateTextInput(session, "DC_result_name", value = paste0(substr(input$DC_to_be_saved_script_name, 1:nchar(input$DC_to_be_saved_script_name)-3), ".Rmd"))
+      print(update)
+      updateTextInput(session, "DC_to_be_saved_script_name", value = paste0(substr(input$DC_result_namee, 1,nchar(input$DC_result_name)-3), "Rmd"))
     } else{
-      updateTextInput(session, "DC_result_name", value = paste0(substr(input$DC_to_be_saved_script_name, 1:nchar(input$DC_to_be_saved_script_name)-3), ".R"))
+      updateTextInput(session, "DC_to_be_saved_script_name", value = paste0(substr(input$DC_result_name, 1,nchar(input$DC_result_name)-3), "R"))
     }
   })
-
 
   observe({
     req(input$Plot_chosen_result)
@@ -512,7 +514,7 @@ validate(
   er_DC_save_displayed_script_error <- eventReactive(input$DC_save_displayed_script,{
     validate(
       need(rv$displayed_script,"Please generate the script first !"),
-      need(input$DC_to_be_saved_script_name, paste0("Please tell me ",lLabels$DC_displayed_script_name))
+      need(input$DC_to_be_saved_script_name, paste0("Please tell me ",lLabels$DC_chosenscript_name))
     )
   })
 
@@ -960,7 +962,7 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
 
 
   output$DC_show_chosen_script = renderText({
-    basename(rv$DC_to_be_displayed_script_name)
+    basename(rv$DC_chosenscript_name)
   })
 
   output$DC_ace = renderUI({

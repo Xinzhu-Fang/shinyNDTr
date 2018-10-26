@@ -261,7 +261,7 @@ ui <- dashboardPage(
                                               column(
                                                 width = 6,
                                                 box(
-                                                  #title = "",
+                                                  title = "Generate a new script",
                                                   width = NULL,
                                                   status = "danger",
                                                   # background = "red",
@@ -281,13 +281,13 @@ ui <- dashboardPage(
                                                 # width = NULL,
 
                                                 box(
-                                                  title = "Load a pre-existing script",
+                                                  title = "Load an existing script",
                                                   width = NULL,
                                                   status = "success",
                                                   # background = "aqua",
                                                   solidHeader = TRUE,
                                                   # script will show upon chosen
-                                                  shinyFiles::shinyFilesButton("DC_to_be_displayed_script_name", lLabels$DC_to_be_displayed_script_name, "", multiple = FALSE),
+                                                  shinyFiles::shinyFilesButton("DC_chosenscript_name", lLabels$DC_chosenscript_name, "", multiple = FALSE),
                                                   helpText("Name of your chosen script: "),
 
                                                   textOutput("DC_show_chosen_script")

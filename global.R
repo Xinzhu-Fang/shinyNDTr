@@ -62,7 +62,7 @@ input_id <- c("home_state_name","home_loaded_state","home_save_state","Plot_chos
   "bin_uploaded_raster","bin_uploaded_raster_name",
   "CL", "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
   "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "CV_repeat", "CV_resample",
-  "CV_split","DC_to_be_displayed_script_name", "DC_run_decoding", "DC_save_displayed_script", "DC_scriptize",
+  "CV_split","DC_chosenscript_name", "DC_run_decoding", "DC_save_displayed_script", "DC_scriptize",
   "DC_uploaded_script","DC_uploaded_script_name", "DS_basic_level_to_use", "DS_basic_var_to_decode", "DS_bUse_all_levels",
   "DS_chosen_bin", "DS_gen_num_training_level_groups", "DS_gen_var_to_decode",
   "DS_gen_var_to_use", "DS_type", "DS_uploaded_binned", "DS_uploaded_binned_name","FP", "FP_excluded_k",
