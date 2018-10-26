@@ -17,7 +17,7 @@ function(input, output, session) {
   rv$state_cur_file_name <- ""
 
   rv$raster_base_dir <- raster_base_dir
-  rv$raster_cur_dir_name <- "No directory chosen yet"
+  rv$raster_cur_dir_name <- NA
   rv$raster_cur_neuron <- 1
   rv$raster_num_neuron <- NA
   rv$raster_cur_file_name <- NULL
@@ -29,14 +29,14 @@ function(input, output, session) {
   rv$create_bin_function_run <- ""
   rv$create_raster_function_run <- ""
 
-  rv$binned_base_dir <- bin_base_dir
-  rv$binned_file_name <- "No file chosen yet"
+  rv$binned_base_dir <- binned_base_dir
+  rv$binned_file_name <- NA
   rv$binned_data <- NULL
   rv$binned_maximum_num_of_levels_in_all_var <- NULL
   rv$binned_all_var <- NULL
 
-  rv$displayed_script_base_dir <- script_base_dir
-  rv$chosen_script_name <- "No script chosen yet"
+  rv$script_base_dir <- script_base_dir
+  rv$DC_to_be_displayed_script_name <- "No script chosen yet"
   rv$displayed_script <- ""
 
   rv$result_base_dir <- result_base_dir
@@ -46,8 +46,8 @@ function(input, output, session) {
 
   shinyFiles::shinyFileChoose(input, "home_loaded_state", roots = c(wd=state_base_dir), filetypes = "Rda")
   shinyFiles::shinyDirChoose(input, "bin_chosen_raster", roots = c(wd=raster_base_dir), filetypes = c("mat", "Rda"))
-  shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=bin_base_dir), filetypes = "Rda")
-  shinyFiles::shinyFileChoose(input, "DC_chosen_script", root =c(wd=script_base_dir, filetypes = c("R", "Rmd")))
+  shinyFiles::shinyFileChoose(input, "DS_chosen_bin", roots = c(wd=binned_base_dir), filetypes = "Rda")
+  shinyFiles::shinyFileChoose(input, "DC_to_be_displayed_script_name", root =c(wd=script_base_dir, filetypes = c("R", "Rmd")))
   shinyFiles::shinyFileChoose(input, "Plot_chosen_result", root =c(wd=result_base_dir), filetypes = "Rda")
 
   output$home_offer_save_state = renderUI({
@@ -161,16 +161,16 @@ observe({
   observe({
     print("do?")
 
-    req(input$DC_chosen_script)
+    req(input$DC_to_be_displayed_script_name)
 
     print("do!")
 
-    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$displayed_script_base_dir),input$DC_chosen_script)
+    temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$script_base_dir),input$DC_to_be_displayed_script_name)
     # print(temp_df_file)
     req(temp_df_file$datapath)
-    rv$chosen_script_name <- temp_df_file$datapath
-    rv$displayed_script <- readChar(rv$chosen_script_name, file.info(rv$chosen_script_name)$size)
-    updateTextInput(session, "DC_displayed_script_name", value = rv$chosen_script_name)
+    rv$DC_to_be_displayed_script_name <- temp_df_file$datapath
+    rv$displayed_script <- readChar(rv$DC_to_be_displayed_script_name, file.info(rv$DC_to_be_displayed_script_name)$size)
+    updateTextInput(session, "DC_displayed_script_name", value = rv$DC_to_be_displayed_script_name)
   })
 
   # when unzip a file, the new file is unzipped to exdir with origianl name, thus there is no need to update input with chosen file name
@@ -181,6 +181,17 @@ observe({
   #
   #   updateTextInput(session, "bin_uploaded_raster_name", value = file.path(rv$raster_base_dir, basename(temp_file_name)))
   # })
+
+
+  observe({
+    req(input$DC_to_be_saved_script_name)
+    if(input$DC_script_mode == "markdown"){
+      updateTextInput(session, "DC_result_name", value = paste0(substr(input$DC_to_be_saved_script_name, 1:nchar(input$DC_to_be_saved_script_name)-3), ".Rmd"))
+    } else{
+      updateTextInput(session, "DC_result_name", value = paste0(substr(input$DC_to_be_saved_script_name, 1:nchar(input$DC_to_be_saved_script_name)-3), ".R"))
+    }
+  })
+
 
   observe({
     req(input$Plot_chosen_result)
@@ -217,34 +228,44 @@ observe({
 
 
   observeEvent(input$DC_save_displayed_script,{
-    req(input$DC_displayed_script_name, rv$displayed_script)
-    file.create(file.path(script_base_dir, input$DC_displayed_script_name), overwrite = TRUE)
-    write(rv$displayed_script, file = input$DC_displayed_script_name)
+    req(input$DC_to_be_saved_script_name, rv$displayed_script)
+    file.create(file.path(script_base_dir, input$DC_to_be_saved_script_name), overwrite = TRUE)
+    write(rv$displayed_script, file = input$DC_to_be_saved_script_name)
   })
 
   rv$script_rmd_not_saved_yet <- 1
 
-  er_DC_rmd_not_saved_before_decoding_error <- eventReactive(rv$script_rmd_not_saved_yet,{
-    validate("Please save the script in R Mardown first !")
-  })
+  # er_DC_rmd_not_saved_before_decoding_error <- eventReactive(rv$script_rmd_not_saved_yet,{
+  #   validate("Please save the script in R Mardown first !")
+  # })
+
+
+
   observeEvent(input$DC_run_decoding, {
 
-    req(rv$displayed_script)
-
+    req(input$DC_to_be_saved_script_name, rv$displayed_script)
+    file.create(file.path(script_base_dir, input$DC_to_be_saved_script_name), overwrite = TRUE)
+    write(rv$displayed_script, file = input$DC_to_be_saved_script_name)
 
     if(input$DC_script_mode == "markdown"){
-      if(!(file.exists(input$DC_displayed_script_name) && tools::file_ext(input$DC_displayed_script_name) == "Rmd" || tools::file_ext(input$DC_displayed_script_name) == "rmd" )){
-        rv$script_rmd_not_saved_yet <- rv$script_rmd_not_saved_yet * (-1)
-      } else{
-        rmarkdown::render(input$DC_displayed_script_name)
 
-      }
+
+      # if(!(file.exists(input$DC_to_be_saved_script_name) && tools::file_ext(input$DC_to_be_saved_script_name) == "Rmd" || tools::file_ext(input$DC_to_be_saved_script_name) == "rmd" )){
+      #   rv$script_rmd_not_saved_yet <- rv$script_rmd_not_saved_yet * (-1)
+      # } else{
+      rmarkdown::render(input$DC_to_be_saved_script_name)
+
+      # }
 
     } else{
-      eval(parse(text = rv$displayed_script))
+      # eval(parse(text = rv$displayed_script))
+      source(input$DC_to_be_saved_script_name)
 
     }
   })
+
+
+
   observeEvent(input$bin_bin_data,{
 
 print(typeof(input$bin_bin_data))
@@ -322,7 +343,6 @@ print(typeof(input$bin_bin_data))
       rv_para$id <- c(rv_para$id,"DS_gen_var_to_use","DS_gen_var_to_decode", "DS_gen_num_training_level_groups")
     }
 
-
     rv_para$inputID <- paste0("input$", rv_para$id)
 
     rv_para$decoding_para_id_computed <- rv_para$decoding_para_id_computed * (-1)
@@ -331,9 +351,6 @@ print(typeof(input$bin_bin_data))
     # do.call(req, as.list(rv_para$inputID))
 
     # print("do")
-
-
-
 
     rv_para$id_of_useful_paras <- c(rv_para$id, "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
                                     "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "DS_bUse_all_levels","FP", "FP_excluded_k",
@@ -351,7 +368,6 @@ print(typeof(input$bin_bin_data))
     rv_para$values <- lapply(rv_para$inputID_of_useful_paras, function(i){
       eval(parse(text = i))
     })
-
 
     # print(rv_para$values)
     lDecoding_paras <- as.list(rv_para$values)
@@ -496,17 +512,20 @@ validate(
   er_DC_save_displayed_script_error <- eventReactive(input$DC_save_displayed_script,{
     validate(
       need(rv$displayed_script,"Please generate the script first !"),
-      need(input$DC_displayed_script_name, paste0("Please tell me ",lLabels$DC_displayed_script_name))
+      need(input$DC_to_be_saved_script_name, paste0("Please tell me ",lLabels$DC_displayed_script_name))
     )
   })
 
-  er_DC_run_decoding_error <- eventReactive(input$DC_run_decoding, {
-    validate(need(rv$displayed_script,"Please generate the script first !"))
-  })
+  # er_DC_run_decoding_error <- eventReactive(input$DC_run_decoding, {
+  #   validate(
+  #     need(rv$displayed_script,"You haven't generated the script yet!"),
+  #     need(rv$to_be_saved_script_name, "You haven't told me the file name for the script yet!")
+  #   )
+  # })
 
-  er_DC_result_name_not_given_error <- eventReactive(input$DC_run_decoding, {
-    validate(need(input$DC_result_name, paste0("Please set ", lLabels$DC_result_name, " first!")))
-  })
+  # er_DC_result_name_not_given_error <- eventReactive(input$DC_run_decoding, {
+  #   validate(need(input$DC_result_name, paste0("Please set ", lLabels$DC_result_name, " first!")))
+  # })
   output$bin_action_error = renderUI({
     er_bin_action_error()
 
@@ -534,9 +553,9 @@ validate(
 
 
   output$DC_run_decoding_error = renderUI({
-    er_DC_run_decoding_error()
-    er_DC_rmd_not_saved_before_decoding_error()
-    er_DC_result_name_not_given_error()
+    er_DC_save_displayed_script_error()
+    # er_DC_rmd_not_saved_before_decoding_error()
+    # er_DC_result_name_not_given_error()
   })
   output$where = renderDataTable(input$bin_uploaded_raster)
 
@@ -570,19 +589,26 @@ validate(
 
   output$DC_offer_save_displayed_script = renderUI({
     list(
-      textInput("DC_displayed_script_name", lLabels$DC_displayed_script_name),
-      actionButton("DC_save_displayed_script", "Save the script"),
+      textInput("DC_to_be_saved_script_name", lLabels$DC_to_be_saved_script_name),
+      actionButton("DC_save_displayed_script", lLabels$DC_save_displayed_script),
       uiOutput("DC_save_displayed_script_error")
     )
   })
 
-
-  output$DC_offer_run_decoding = renderUI({
+  output$DC_offer_scriptize = renderUI({
     list(
 
       textInput("DC_result_name", lLabels$DC_result_name),
       actionButton("DC_scriptize", lLabels$DC_scriptize),
-      uiOutput("DC_scriptize_error"),
+      uiOutput("DC_scriptize_error")
+
+    )
+  })
+
+  output$DC_offer_run_decoding = renderUI({
+    list(
+
+
       helpText(""),
       actionButton("DC_run_decoding", lLabels$DC_run_decoding),
       uiOutput("DC_run_decoding_error")
@@ -640,7 +666,12 @@ validate(
   output$bin_show_chosen_raster = renderText({
     # temp_text = "Chose raster"
     # rv$raster_cur_dir_name <- parseDirPath(c(wd=eval(getwd())),input$bin_chosen_raster)
-    basename(rv$raster_cur_dir_name)
+    if(is.na(rv$raster_cur_dir_name)){
+      "raster_cur_dir_name"
+    } else{
+      basename(rv$raster_cur_dir_name)
+
+    }
   })
 
   output$bin_show_raster_cur_file_name = renderText({
@@ -695,8 +726,12 @@ req(rv$mRaster_cur_data)
 
 
   output$DS_show_chosen_bin = renderText({
+    if(is.na(rv$binned_file_name)){
+      "No file chosen yet"
+    } else{
+      basename(rv$binned_file_name)
 
-    basename(rv$binned_file_name)
+    }
   })
 
   output$DS_basic_list_of_var_to_decode = renderUI({
@@ -925,7 +960,7 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
 
 
   output$DC_show_chosen_script = renderText({
-    basename(rv$chosen_script_name)
+    basename(rv$DC_to_be_displayed_script_name)
   })
 
   output$DC_ace = renderUI({

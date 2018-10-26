@@ -27,7 +27,7 @@ options(shiny.maxRequestSize=1000*1024^2)
 # !
 state_base_dir <- file.path(eval(getwd()))
 raster_base_dir <- file.path(eval(getwd()),'data/raster') #"."
-bin_base_dir <- file.path(eval(getwd()),'data/binned') #"."
+binned_base_dir <- file.path(eval(getwd()),'data/binned') #"."
 script_base_dir <- file.path(eval(getwd()),'scripts') #"."
 result_base_dir <- file.path(eval(getwd()),'results') #"."
 
@@ -53,7 +53,7 @@ req_dc_para <- c("CL", "CV_bDiag", "CV_repeat", "CV_resample", "CV_split", "DS_c
 # req_dc_para_basic_leve <- c()
 
 all_input <- list()
-input_id <- c("home_state_name","home_loaded_state","home_save_state","Plot_chosen_result","DC_result_name", "DC_script_mode","DC_displayed_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
+input_id <- c("home_state_name","home_loaded_state","home_save_state","Plot_chosen_result","DC_result_name", "DC_script_mode","DC_to_be_saved_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
               "bin_bin_data", "bin_bin_width", "bin_bPlot", "bin_chosen_raster",
               "bin_end_ind", "bin_next_neuron", "bin_prefix_of_binned_file_name",
               "bin_new_raster",
@@ -62,7 +62,7 @@ input_id <- c("home_state_name","home_loaded_state","home_save_state","Plot_chos
   "bin_uploaded_raster","bin_uploaded_raster_name",
   "CL", "CL_SVM_coef0", "CL_SVM_cost", "CL_SVM_degree",
   "CL_SVM_gamma", "CL_SVM_kernel", "CV_bDiag", "CV_repeat", "CV_resample",
-  "CV_split","DC_chosen_script", "DC_run_decoding", "DC_save_displayed_script", "DC_scriptize",
+  "CV_split","DC_to_be_displayed_script_name", "DC_run_decoding", "DC_save_displayed_script", "DC_scriptize",
   "DC_uploaded_script","DC_uploaded_script_name", "DS_basic_level_to_use", "DS_basic_var_to_decode", "DS_bUse_all_levels",
   "DS_chosen_bin", "DS_gen_num_training_level_groups", "DS_gen_var_to_decode",
   "DS_gen_var_to_use", "DS_type", "DS_uploaded_binned", "DS_uploaded_binned_name","FP", "FP_excluded_k",
@@ -80,7 +80,7 @@ input_label <- c("File name of the current state should be saved (e.g., state_01
                  "Upload a zipped file raster data (optional)", "Where you want the file to be unzipped",
                  "Classifier", "Coef0", "Cost", "Degree of polynomial",
                  "Gamma", "Kernel", "Test only at training times?", "Number of repeats of each level in each CV split", "Number of resampling runs",
-                 "Number of cross validation split", "Browse","Run decoding", "Save the script", "Generate script",
+                 "Number of cross validation split", "Browse","Save the script and run decoding", "Only save the script", "Generate script",
                  "Upload new script (optional)","Where you want this file to be saved", "Levels to use", "Variable to decode and to use", "Use all the levels of this variable?",
                  "Browse", "How many training level groups you will use?",  "Variable to decode",
                  "Variable to use", "Type of data source", "Upload new binned data (optional)", "Where you want this file to be saved", "Feature Preprocessors", "exclude top ? features (this will be applied second)",

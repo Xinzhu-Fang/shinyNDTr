@@ -267,8 +267,11 @@ ui <- dashboardPage(
                                                   # background = "red",
                                                   #solidHeader = TRUE,
 
-                                                  helpText("A markdown has to be saved before running"),
+
                                                   radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "r"),
+                                                  uiOutput("DC_offer_scriptize"),
+                                                  # textinput of filename to be saved if not existing and to be saved as if existing;
+                                                  uiOutput("DC_offer_save_displayed_script"),
                                                   uiOutput("DC_offer_run_decoding")
 
                                                   # )
@@ -284,7 +287,7 @@ ui <- dashboardPage(
                                                   # background = "aqua",
                                                   solidHeader = TRUE,
                                                   # script will show upon chosen
-                                                  shinyFiles::shinyFilesButton("DC_chosen_script", lLabels$DC_chosen_script, "", multiple = FALSE),
+                                                  shinyFiles::shinyFilesButton("DC_to_be_displayed_script_name", lLabels$DC_to_be_displayed_script_name, "", multiple = FALSE),
                                                   helpText("Name of your chosen script: "),
 
                                                   textOutput("DC_show_chosen_script")
@@ -293,9 +296,7 @@ ui <- dashboardPage(
                                               column(width = 6,
                                                      box(width = NULL,
 
-                                                         uiOutput("DC_ace"),
-                                                         # textinput of filename to be saved if not existing and to be saved as if existing;
-                                                         uiOutput("DC_offer_save_displayed_script")
+                                                         uiOutput("DC_ace")
 
 
                                                      )
