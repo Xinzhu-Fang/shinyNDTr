@@ -305,9 +305,10 @@ ui <- dashboardPage(
 
                                               )
                                             )
-
-
                                           )
+
+
+
 
                                       ))
 
@@ -353,12 +354,17 @@ ui <- dashboardPage(
                                          tabPanel("Timeseries",
                                                   selectInput("Plot_timeseries_result_type", lLabels$Plot_timeseries_result_type,
                                                               all_result_type),
-                                                  plotOutput("timeseries")
+                                                  plotOutput("Plot_timeseries")
                                          ),
                                          tabPanel("TCT heatmap",
                                                   selectInput("Plot_tct_result_type", lLabels$Plot_TCT_result_type,
                                                               all_result_type),
-                                                  plotOutput("tct")
+                                                  plotOutput("Plot_tct")
+                                         ),
+
+                                         tabPanel("PDF of script and result",
+                                                 actionButton("Plot_create_pdf", lLabels$Plot_create_pdf),
+                                                 htmlOutput("Plot_pdf")
                                          )
 
                                   )

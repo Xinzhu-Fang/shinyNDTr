@@ -20,4 +20,3 @@ save('DECODING_RESULTS', file = '/student/15/xf15/GitHub/shinyNDTr/results/rmd.r
 ```
 
 
-

@@ -53,7 +53,7 @@ req_dc_para <- c("CL", "CV_bDiag", "CV_repeat", "CV_resample", "CV_split", "DS_c
 # req_dc_para_basic_leve <- c()
 
 all_input <- list()
-input_id <- c("home_state_name","home_loaded_state","home_save_state","Plot_chosen_result","DC_result_name", "DC_script_mode","DC_to_be_saved_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
+input_id <- c("Plot_create_pdf","home_state_name","home_loaded_state","home_save_state","Plot_chosen_result","DC_to_be_saved_result_name", "DC_script_mode","DC_to_be_saved_script_name","DS_save_binned_to_disk","DC_save_script_to_disk","bin_save_raster_to_disk","bin_create_raster",
               "bin_bin_data", "bin_bin_width", "bin_bPlot", "bin_chosen_raster",
               "bin_end_ind", "bin_next_neuron", "bin_prefix_of_binned_file_name",
               "bin_new_raster",
@@ -69,7 +69,7 @@ input_id <- c("home_state_name","home_loaded_state","home_save_state","Plot_chos
   "script", "sidebarCollapsed", "sidebarItemExpanded")
 
 
-input_label <- c("File name of the current state should be saved (e.g., state_01.Rda)","Load a pre-existing state","Save the current state","Browse", "File name of the result to be saved (e.g., ZD_001.Rda)","File type for generated script","File name of the displayed script to be saved (e.g., ZD_01.Rmd)", "Save to disk","Save to disk","Save to disk",
+input_label <- c("Create","File name of the current state should be saved (e.g., state_01.Rda)","Load a pre-existing state","Save the current state","Browse", "File name of the result to be saved (e.g., ZD_001.Rda)","File type for generated script","File name of the displayed script to be saved (e.g., ZD_01.Rmd)", "Save to disk","Save to disk","Save to disk",
   "Create raster",
                  "Bin the data", "Bin width", "Plot the data? (only for spike trains in .Rda file)", "Browse",
                  "Index of the sample where the last bin ends (optional)", "next file","prefix of binned file name (e.g., data/binned/ZD)",
@@ -111,7 +111,7 @@ move_file <- function(from, to) {
 preprocess_paras <- function(my_decoding_paras){
   print("attach path")
 
-  my_decoding_paras$DC_result_name <- file.path(result_base_dir,my_decoding_paras$DC_result_name)
+  my_decoding_paras$DC_to_be_saved_result_name <- file.path(result_base_dir,my_decoding_paras$DC_to_be_saved_result_name)
 
   return(my_decoding_paras)
 }
@@ -130,46 +130,46 @@ create_script_in_rmd <- function(my_decoding_paras, rv) {
 
   my_text = ""
 
-  my_text = paste0(my_text, "---\ntitle: 'Decoding Analysis'\noutput: pdf_document\n---\n",
-                   "```{r setup, include=FALSE}\n",
-                   "knitr::opts_chunk$set(echo = TRUE)\n",
-                   "```\n")
+  my_text = paste0(my_text, "---\n\n\ntitle: 'Decoding Analysis'\n\n\noutput: pdf_document\n\n\n---\n\n\n",
+                   "```{r setup, include=FALSE}\n\n\n",
+                   "knitr::opts_chunk$set(echo = TRUE)\n\n\n",
+                   "```\n\n\n")
 
-  my_text = paste0(my_text, "\n```{r}\n")
+  my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
-  my_text = paste0(my_text, "binned_file_name <-", "'",rv$binned_file_name,"'", "\n")
+  my_text = paste0(my_text, "binned_file_name <-", "'",rv$binned_file_name,"'", "\n\n\n")
 
 
 
-  #   my_text = paste0(my_text, "```\n")
-  #   my_text = paste0(my_text, "\n```{r}\n")
+  #   my_text = paste0(my_text, "```\n\n\n")
+  #   my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
   if(my_decoding_paras$DS_type == "basic_DS"){
-    my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n")
-    my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n")
+    my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n\n\n")
+    my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n\n\n")
 
-    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n")
-    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")
+    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n\n\n")
+    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n\n\n")
 
     # this one is bad because level_to_use can be passed from the previous selection
     # if(!is.null(my_decoding_paras$DS_basic_level_to_use)){
     if(!my_decoding_paras$DS_bUse_all_levels){
-      my_text = paste0(my_text, "ds$level_to_use <- ", deparse(dput(my_decoding_paras$DS_basic_level_to_use)), "\n")
+      my_text = paste0(my_text, "ds$level_to_use <- ", deparse(dput(my_decoding_paras$DS_basic_level_to_use)), "\n\n\n")
     }
   }
 
 
 
 
-  # my_text = paste0(my_text, "```\n")
-  # my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
 
-  my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n")
+  my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n\n\n")
 
 
-  # my_text = paste0(my_text, "```\n")
-  # my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
 
   my_text = paste0(my_text, "fps <- list(")
@@ -194,23 +194,23 @@ create_script_in_rmd <- function(my_decoding_paras, rv) {
   }
 
   # browser()
-  my_text = paste0(my_text, ")\n")
+  my_text = paste0(my_text, ")\n\n\n")
 
 
-  # my_text = paste0(my_text, "```\n")
-  # my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
-  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n")
+  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n\n\n")
 
-  # my_text = paste0(my_text, "```\n")
-  # my_text = paste0(my_text, "\n```{r}\n")
-
-
-  my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n")
-  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '", my_decoding_paras$DC_result_name, "')\n")
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
 
-  my_text = paste0(my_text, "```\n")
+  my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n\n\n")
+  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '", my_decoding_paras$DC_to_be_saved_result_name, "')\n\n\n")
+
+
+  my_text = paste0(my_text, "```\n\n\n")
 
 
 
@@ -230,46 +230,46 @@ create_script_in_r <- function(my_decoding_paras, rv) {
 
   my_text = ""
 
-  # my_text = paste0(my_text, "---\ntitle: 'Decoding Analysis'\noutput: pdf_document\n---\n",
-  #                  "```{r setup, include=FALSE}\n",
-  #                  "knitr::opts_chunk$set(echo = TRUE)\n",
-  #                  "```\n")
+  # my_text = paste0(my_text, "---\n\n\ntitle: 'Decoding Analysis'\n\n\noutput: pdf_document\n\n\n---\n\n\n",
+  #                  "```{r setup, include=FALSE}\n\n\n",
+  #                  "knitr::opts_chunk$set(echo = TRUE)\n\n\n",
+  #                  "```\n\n\n")
   #
-  # my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
-  my_text = paste0(my_text, "binned_file_name <-", "'",rv$binned_file_name,"'", "\n")
+  my_text = paste0(my_text, "binned_file_name <-", "'",rv$binned_file_name,"'", "\n\n\n")
 
 
 
-  #   my_text = paste0(my_text, "```\n")
-  #   my_text = paste0(my_text, "\n```{r}\n")
+  #   my_text = paste0(my_text, "```\n\n\n")
+  #   my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
   if(my_decoding_paras$DS_type == "basic_DS"){
-    my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n")
-    my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n")
+    my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n\n\n")
+    my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n\n\n")
 
-    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n")
-    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n")
+    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n\n\n")
+    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n\n\n")
 
     # this one is bad because level_to_use can be passed from the previous selection
     # if(!is.null(my_decoding_paras$DS_basic_level_to_use)){
     if(!my_decoding_paras$DS_bUse_all_levels){
-      my_text = paste0(my_text, "ds$level_to_use <- ", deparse(dput(my_decoding_paras$DS_basic_level_to_use)), "\n")
+      my_text = paste0(my_text, "ds$level_to_use <- ", deparse(dput(my_decoding_paras$DS_basic_level_to_use)), "\n\n\n")
     }
   }
 
 
 
 
-  # my_text = paste0(my_text, "```\n")
-  # my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
 
-  my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n")
+  my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n\n\n")
 
 
-  # my_text = paste0(my_text, "```\n")
-  # my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
 
   my_text = paste0(my_text, "fps <- list(")
@@ -294,27 +294,46 @@ create_script_in_r <- function(my_decoding_paras, rv) {
   }
 
 # browser()
-  my_text = paste0(my_text, ")\n")
+  my_text = paste0(my_text, ")\n\n\n")
 
 
-  # my_text = paste0(my_text, "```\n")
-  # my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
-  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n")
+  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n\n\n")
 
-  # my_text = paste0(my_text, "```\n")
-  # my_text = paste0(my_text, "\n```{r}\n")
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
 
-  my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n")
+  my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n\n\n")
 
-  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '",my_decoding_paras$DC_result_name, "')")
+  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '",my_decoding_paras$DC_to_be_saved_result_name, "')")
 
-  # my_text = paste0(my_text, "```\n")
+  # my_text = paste0(my_text, "```\n\n\n")
 
 
 
   return(my_text)
+
+}
+
+append_result_to_pdf <- function(Plot_chosen_result, Plot_timeseries_result_type){
+
+  my_text = "```{r}"
+
+  my_text = paste0(my_text,"selected_result <- DECODING_RESULTS$", Plot_timeseries_result_type, "\n\n\n")
+
+  my_text = paste0(my_text, "selected_mean_results <- colMeans(selected_result)\n\n\n")
+
+
+  my_text = paste0(my_text,"selected_time_bin_names <- NDTr::get_center_bin_time(dimnames(selected_result)[[3]])\n\n\n")
+
+  my_text = paste0(my_text,"plot(selected_time_bin_names, diag(selected_mean_results), type = 'o', xlab = 'Time (ms)', ylab = 'Decoding Accuracy')\n\n\n")
+
+  my_text = paste0(my_text, "abline(v = 0)\n\n\n")
+
+  write(my_text, file = file.path(script_base_dir, paste0(substr(input$Plot_chosen_result, 1,nchar(input$Plot_chosen_result)-3), "Rmd")), append=TRUE)
 
 }
 
