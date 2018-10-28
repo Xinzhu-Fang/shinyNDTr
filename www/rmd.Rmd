@@ -59,3 +59,22 @@ save('DECODING_RESULTS', file = '/student/15/xf15/GitHub/shinyNDTr/results/rmd.r
 
 
 
+```{r}
+
+
+selected_result <- DECODING_RESULTS$zero_one_loss_results
+
+
+selected_mean_results <- colMeans(selected_result)
+
+
+selected_time_bin_names <- NDTr::get_center_bin_time(dimnames(selected_result)[[3]])
+
+
+image.plot(selected_time_bin_names, selected_time_bin_names, selected_mean_results, legend.lab = 'Classification Accuracy', xlab = 'Test time (ms)', ylab = 'Train time (ms)')
+
+
+abline(v = 0)
+
+
+```

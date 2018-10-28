@@ -139,7 +139,7 @@ output: pdf\_document
 \NormalTok{variable_to_decode <-}\StringTok{'combined_ID_position'}
 
 
-\NormalTok{num_cv_splits <-}\StringTok{ }\DecValTok{5}
+\NormalTok{num_cv_splits <-}\StringTok{ }\DecValTok{2}
 
 
 \NormalTok{ds <-}\StringTok{ }\NormalTok{NDTr}\OperatorTok{::}\NormalTok{basic_DS}\OperatorTok{$}\KeywordTok{new}\NormalTok{(binned_file_name, variable_to_decode, num_cv_splits)}
@@ -163,22 +163,36 @@ output: pdf\_document
 
 \begin{verbatim}
 ## [1] 1
-## 24.904 sec elapsed
+## 25.382 sec elapsed
 ## [1] 2
-## 24.735 sec elapsed
-## [1] 3
-## 25.136 sec elapsed
-## [1] 4
-## 25.642 sec elapsed
-## [1] 5
-## 25.616 sec elapsed
+## 25.036 sec elapsed
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{save}\NormalTok{(}\StringTok{'DECODING_RESULTS'}\NormalTok{, }\DataTypeTok{file =} \StringTok{'/student/15/xf15/GitHub/shinyNDTr/results/rmd.rda'}\NormalTok{)}
+\KeywordTok{save}\NormalTok{(}\StringTok{'DECODING_RESULTS'}\NormalTok{, }\DataTypeTok{file =} \StringTok{'/student/15/xf15/GitHub/shinyNDTr/results/r.rda'}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{selected_result <-}\StringTok{ }\NormalTok{DECODING_RESULTS}\OperatorTok{$}\NormalTok{zero_one_loss_results}
+
+
+\NormalTok{selected_mean_results <-}\StringTok{ }\KeywordTok{colMeans}\NormalTok{(selected_result)}
+
+
+\NormalTok{selected_time_bin_names <-}\StringTok{ }\NormalTok{NDTr}\OperatorTok{::}\KeywordTok{get_center_bin_time}\NormalTok{(}\KeywordTok{dimnames}\NormalTok{(selected_result)[[}\DecValTok{3}\NormalTok{]])}
+
+
+\KeywordTok{image.plot}\NormalTok{(selected_time_bin_names, selected_time_bin_names, selected_mean_results, }\DataTypeTok{legend.lab =} \StringTok{'Classification Accuracy'}\NormalTok{, }\DataTypeTok{xlab =} \StringTok{'Test time (ms)'}\NormalTok{, }\DataTypeTok{ylab =} \StringTok{'Train time (ms)'}\NormalTok{)}
+
+
+\KeywordTok{abline}\NormalTok{(}\DataTypeTok{v =} \DecValTok{0}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{r_files/figure-latex/unnamed-chunk-2-1.pdf}
 
 
 \end{document}

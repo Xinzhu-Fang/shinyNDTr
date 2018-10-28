@@ -187,7 +187,7 @@ observe({
   observe({
 
     req(input$DC_to_be_saved_result_name)
-    if(input$DC_script_mode == "markdown"){
+    if(input$DC_script_mode == "R Markdown"){
       print(update)
       updateTextInput(session, "DC_to_be_saved_script_name", value = paste0(substr(input$DC_to_be_saved_result_name, 1,nchar(input$DC_to_be_saved_result_name)-3), "Rmd"))
     } else{
@@ -231,8 +231,9 @@ observe({
 
   observeEvent(input$DC_save_displayed_script,{
     req(input$DC_to_be_saved_script_name, rv$displayed_script)
-    file.create(file.path(script_base_dir, input$DC_to_be_saved_script_name), overwrite = TRUE)
-    write(rv$displayed_script, file = file.path(script_base_dir,input$DC_to_be_saved_script_name))
+    temp_file_name = file.path(script_base_dir, input$DC_to_be_saved_script_name)
+    file.create(temp_file_name, overwrite = TRUE)
+    write(rv$displayed_script, file = temp_file_name)
   })
 
   rv$script_rmd_not_saved_yet <- 1
@@ -249,13 +250,13 @@ observe({
     file.create(file.path(script_base_dir, input$DC_to_be_saved_script_name), overwrite = TRUE)
     write(rv$displayed_script, file = file.path(script_base_dir,input$DC_to_be_saved_script_name))
 
-    if(input$DC_script_mode == "markdown"){
+    if(input$DC_script_mode == "R Markdown"){
 0
 
       # if(!(file.exists(input$DC_to_be_saved_script_name) && tools::file_ext(input$DC_to_be_saved_script_name) == "Rmd" || tools::file_ext(input$DC_to_be_saved_script_name) == "rmd" )){
       #   rv$script_rmd_not_saved_yet <- rv$script_rmd_not_saved_yet * (-1)
       # } else{
-      rmarkdown::render(file.path(script_base_dir,input$DC_to_be_saved_script_name), "pdf_document")
+      rmarkdown::render(file.path(script_base_dir,input$DC_to_be_saved_script_name))
 
       # }
 
@@ -378,7 +379,7 @@ print(typeof(input$bin_bin_data))
     # print(lDecoding_paras)
     # print(lDecoding_paras$CL)
 
-    if(input$DC_script_mode == "markdown"){
+    if(input$DC_script_mode == "R Markdown"){
       rv$displayed_script <- create_script_in_rmd(lDecoding_paras, rv)
     } else (
       rv$displayed_script <- create_script_in_r(lDecoding_paras, rv)
@@ -976,16 +977,23 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
   })
 
 
-  observeEvent("Plot_create_pdf",{
+  observeEvent(input$Plot_create_pdf,{
     req(rv$result_chosen, input$Plot_timeseries_result_type)
-    append_result_to_pdf(rv$result_chosen, input$Plot_timeseries_result_type)
+    append_result_to_pdf_and_knit(rv$result_chosen, input$Plot_timeseries_result_type)
+    print("done")
+    output$Plot_pdf <- renderUI({
+      req(rv$result_chosen)
+      tags$iframe(style="height:600px; width:100%", src= paste0(substr(basename(rv$result_chosen), 1,nchar(basename(rv$result_chosen))-3), "pdf"))
+      # return(paste('<iframe style="height:600px; width:100%" src="', file.path(script_base_dir, paste0(substr(basename(rv$result_chosen), 1,nchar(basename(rv$result_chosen))-3), "pdf")), '"></iframe>', sep = ""))
+      # return(paste('<iframe style="height:600px; width:100%" src="', "https://asterius.hampshire.edu/s/afd81b2933ea5d1a296e3/files/GitHub/shinyNDTr/scripts/rmd.pdf", '"></iframe>', sep = ""))
+
   })
 
 
-  output$Plot_pdf <- renderText({
-    req(rv$result_chosen)
-    browser()
-    return(paste('<iframe style="height:600px; width:100%" src="', file.path(script_base_dir, paste0(substr(basename(rv$result_chosen), 1,nchar(basename(rv$result_chosen))-3), "pdf")), '"></iframe>', sep = ""))
+
+
+
+
   })
 
   output$Plot_show_chosen_result = renderText({
@@ -1014,7 +1022,7 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
 
     temp_time_bin_names <- NDTr::get_center_bin_time(dimnames(temp_result)[[3]])
 
-    plot(temp_time_bin_names, diag(temp_mean_results), type = "o", xlab = "Time (ms)", ylab = "Decoding Accuracy")
+    plot(temp_time_bin_names, diag(temp_mean_results), type = "o", xlab = "Time (ms)", ylab = "Classification Accuracy")
 
     abline(v = 0)
 

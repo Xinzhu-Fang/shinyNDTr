@@ -56,18 +56,6 @@ ui <- dashboardPage(
                            )
                          ),
                          tabPanel(
-                           title = "Upload new raster data",
-                           fluidRow(
-                             box(width = NULL,
-                                 helpText("We only accept .mat and .Rda format !"),
-                                 uiOutput("bin_offer_upload_raster"),
-                                 uiOutput("bin_offer_create_raster"),
-                                 uiOutput("bin_evil_raster"),
-                                 textOutput("bin_show_create_raster_function_run")
-                             )
-                           )
-                         ),
-                         tabPanel(
 
                            title = "Plot raster data",
                            fluidPage(
@@ -109,6 +97,18 @@ ui <- dashboardPage(
 
                                       )
                                )
+                             )
+                           )
+                         ),
+                         tabPanel(
+                           title = "Upload new raster data",
+                           fluidRow(
+                             box(width = NULL,
+                                 helpText("We only accept .mat and .Rda format !"),
+                                 uiOutput("bin_offer_upload_raster"),
+                                 uiOutput("bin_offer_create_raster"),
+                                 uiOutput("bin_evil_raster"),
+                                 textOutput("bin_show_create_raster_function_run")
                              )
                            )
                          )
@@ -268,7 +268,7 @@ ui <- dashboardPage(
                                                   solidHeader = TRUE,
 
 
-                                                  radioButtons("DC_script_mode", lLabels$DC_script_mode, c("r", "markdown"), selected = "r"),
+                                                  radioButtons("DC_script_mode", lLabels$DC_script_mode, c("R", "R Markdown"), selected = "R"),
                                                   uiOutput("DC_offer_scriptize"),
                                                   # textinput of filename to be saved if not existing and to be saved as if existing;
                                                   uiOutput("DC_offer_save_displayed_script"),
@@ -321,19 +321,6 @@ ui <- dashboardPage(
 
                          ),
                          tabPanel(
-
-                           title = "Upload new binned data",
-                           width = NULL,
-                           box(
-                             title = NULL,
-                             width = NULL,
-
-
-                             uiOutput("DS_offer_upload_bin")
-
-                           )
-                         ),
-                         tabPanel(
                            title = "Plot decoding results",
 
                            column(width = 12,
@@ -363,11 +350,25 @@ ui <- dashboardPage(
                                          ),
 
                                          tabPanel("PDF of script and result",
-                                                 actionButton("Plot_create_pdf", lLabels$Plot_create_pdf),
-                                                 htmlOutput("Plot_pdf")
+                                                  actionButton("Plot_create_pdf", lLabels$Plot_create_pdf),
+                                                  helpText(""),
+                                                  uiOutput("Plot_pdf")
                                          )
 
                                   )
+                           )
+                         ),
+                         tabPanel(
+
+                           title = "Upload new binned data",
+                           width = NULL,
+                           box(
+                             title = NULL,
+                             width = NULL,
+
+
+                             uiOutput("DS_offer_upload_bin")
+
                            )
                          )
               )

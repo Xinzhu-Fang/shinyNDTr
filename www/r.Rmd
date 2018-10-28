@@ -31,7 +31,7 @@ binned_file_name <-'/student/15/xf15/GitHub/shinyNDTr/data/binned/ZD_150_samples
 variable_to_decode <-'combined_ID_position'
 
 
-num_cv_splits <- 5
+num_cv_splits <- 2
 
 
 ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)
@@ -52,10 +52,29 @@ cv <- NDTr::standard_CV$new(ds, cl, fps)
 DECODING_RESULTS <- cv$run_decoding()
 
 
-save('DECODING_RESULTS', file = '/student/15/xf15/GitHub/shinyNDTr/results/rmd.rda')
+save('DECODING_RESULTS', file = '/student/15/xf15/GitHub/shinyNDTr/results/r.rda')
+
 
 
 ```
 
 
+```{r}
 
+
+selected_result <- DECODING_RESULTS$zero_one_loss_results
+
+
+selected_mean_results <- colMeans(selected_result)
+
+
+selected_time_bin_names <- NDTr::get_center_bin_time(dimnames(selected_result)[[3]])
+
+
+image.plot(selected_time_bin_names, selected_time_bin_names, selected_mean_results, legend.lab = 'Classification Accuracy', xlab = 'Test time (ms)', ylab = 'Train time (ms)')
+
+
+abline(v = 0)
+
+
+```

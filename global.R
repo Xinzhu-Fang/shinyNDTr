@@ -30,6 +30,7 @@ raster_base_dir <- file.path(eval(getwd()),'data/raster') #"."
 binned_base_dir <- file.path(eval(getwd()),'data/binned') #"."
 script_base_dir <- file.path(eval(getwd()),'scripts') #"."
 result_base_dir <- file.path(eval(getwd()),'results') #"."
+www_base_dir <- file.path(eval(getwd()),'www') #"."
 
 # all_cl <- c("maximum correlation", "support vecotor machine", "poisson naive bayes")
 # all_fp <- c("select_pvalue_significant_features","select or exclude top k features", "zscore_normalize")
@@ -117,16 +118,7 @@ preprocess_paras <- function(my_decoding_paras){
 }
 
 
-
-
-create_script_in_rmd <- function(my_decoding_paras, rv) {
-
-
-
-  print(names(my_decoding_paras))
-
-  my_decoding_paras = preprocess_paras(my_decoding_paras)
-
+convert_r_into_rmd <- function(text){
 
   my_text = ""
 
@@ -137,84 +129,30 @@ create_script_in_rmd <- function(my_decoding_paras, rv) {
 
   my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
-  my_text = paste0(my_text, "binned_file_name <-", "'",rv$binned_file_name,"'", "\n\n\n")
+  my_text = paste0(my_text, text)
 
 
 
-  #   my_text = paste0(my_text, "```\n\n\n")
-  #   my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-  if(my_decoding_paras$DS_type == "basic_DS"){
-    my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n\n\n")
-    my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n\n\n")
-
-    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n\n\n")
-    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n\n\n")
-
-    # this one is bad because level_to_use can be passed from the previous selection
-    # if(!is.null(my_decoding_paras$DS_basic_level_to_use)){
-    if(!my_decoding_paras$DS_bUse_all_levels){
-      my_text = paste0(my_text, "ds$level_to_use <- ", deparse(dput(my_decoding_paras$DS_basic_level_to_use)), "\n\n\n")
-    }
-  }
-
-
-
-
-  # my_text = paste0(my_text, "```\n\n\n")
-  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-
-  my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n\n\n")
-
-
-  # my_text = paste0(my_text, "```\n\n\n")
-  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-
-  my_text = paste0(my_text, "fps <- list(")
-
-
-  select_k_text = ""
-  norm_text = ""
-
-  if(!is.null(my_decoding_paras$FP)){
-    if(sum(grepl(all_fp[2], my_decoding_paras$FP)) == 1){
-      norm_text = paste0(norm_text, "NDTr::", all_fp[2], "$new()")
-      my_text = paste0(my_text, norm_text, ",")
-    }
-
-    if(sum(grepl(all_fp[1], my_decoding_paras$FP)) == 1){
-      select_k_text = paste0(select_k_text, "NDTr::", all_fp[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, ",", "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
-      my_text = paste0(my_text, select_k_text)
-    } else {
-      my_text = substr(my_text, 1, nchar(my_text)-1)
-
-    }
-  }
-
-  # browser()
-  my_text = paste0(my_text, ")\n\n\n")
-
-
-  # my_text = paste0(my_text, "```\n\n\n")
-  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n\n\n")
-
-  # my_text = paste0(my_text, "```\n\n\n")
-  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-
-  my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n\n\n")
-  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '", my_decoding_paras$DC_to_be_saved_result_name, "')\n\n\n")
-
-
-  my_text = paste0(my_text, "```\n\n\n")
+  my_text = paste0(my_text, "\n\n\n```\n\n\n")
 
 
 
   return(my_text)
+}
+
+create_script_in_rmd <- function(my_decoding_paras, rv) {
+
+
+r_text <- create_script_in_r(my_decoding_paras, rv)
+
+rmd_text <- convert_r_into_rmd(r_text)
+
+
+
+
+return(rmd_text)
+
+
 
 }
 
@@ -318,9 +256,28 @@ create_script_in_r <- function(my_decoding_paras, rv) {
 
 }
 
-append_result_to_pdf <- function(Plot_chosen_result, Plot_timeseries_result_type){
+append_result_to_pdf_and_knit <- function(result_chosen, Plot_timeseries_result_type){
 
-  my_text = "```{r}"
+  my_new_file_name = file.path(www_base_dir, basename(paste0(substr(basename(result_chosen), 1,nchar(basename(result_chosen))-3), "Rmd")))
+
+  file.create(my_new_file_name,  overwrite = TRUE)
+
+  potential_rmd_name <- file.path(script_base_dir, paste0(substr(basename(result_chosen), 1,nchar(basename(result_chosen))-3), "Rmd"))
+
+  if(file.exists(potential_rmd_name)){
+    # my_text = paste(readLines(potential_rmd_name), collapse = "")
+    my_text = sourcetools::read(potential_rmd_name)
+
+  } else{
+    potential_r_name <- file.path(script_base_dir, paste0(substr(basename(result_chosen), 1,nchar(basename(result_chosen))-3), "R"))
+    # my_text = paste(readLines(potential_r_name), collapse = "")
+    my_text = sourcetools::read(potential_r_name)
+
+    my_text = convert_r_into_rmd(my_text)
+  }
+
+
+  my_text = paste0(my_text,"```{r}\n\n\n")
 
   my_text = paste0(my_text,"selected_result <- DECODING_RESULTS$", Plot_timeseries_result_type, "\n\n\n")
 
@@ -329,11 +286,16 @@ append_result_to_pdf <- function(Plot_chosen_result, Plot_timeseries_result_type
 
   my_text = paste0(my_text,"selected_time_bin_names <- NDTr::get_center_bin_time(dimnames(selected_result)[[3]])\n\n\n")
 
-  my_text = paste0(my_text,"plot(selected_time_bin_names, diag(selected_mean_results), type = 'o', xlab = 'Time (ms)', ylab = 'Decoding Accuracy')\n\n\n")
+  my_text = paste0(my_text,"image.plot(selected_time_bin_names, selected_time_bin_names, selected_mean_results, legend.lab = 'Classification Accuracy', xlab = 'Test time (ms)', ylab = 'Train time (ms)', title = 'Temporal cross-training plot')\n\n\n")
 
-  my_text = paste0(my_text, "abline(v = 0)\n\n\n")
+  my_text = paste0(my_text, "abline(v = 0)\n\n\n```")
 
-  write(my_text, file = file.path(script_base_dir, paste0(substr(input$Plot_chosen_result, 1,nchar(input$Plot_chosen_result)-3), "Rmd")), append=TRUE)
+  write(my_text, file = my_new_file_name)
+
+  print(my_text)
+
+  rmarkdown::render(my_new_file_name, "pdf_document")
+
 
 }
 
