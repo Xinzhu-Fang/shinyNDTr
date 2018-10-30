@@ -42,6 +42,9 @@ function(input, output, session) {
   rv$result_base_dir <- result_base_dir
   rv$result_chosen <- NA
   rv$result_data <- NULL
+
+
+  rv$www_base_dir <- www_base_dir
   # only files meet specified files types will be shown. However, such dir shown as empty can still be choosed
 
   shinyFiles::shinyFileChoose(input, "home_loaded_state", roots = c(wd=state_base_dir), filetypes = "Rda")
@@ -86,6 +89,9 @@ observe({
 # }
 
 })
+
+
+
   observe({
     req(input$bin_chosen_raster)
 
@@ -256,7 +262,8 @@ observe({
       # if(!(file.exists(input$DC_to_be_saved_script_name) && tools::file_ext(input$DC_to_be_saved_script_name) == "Rmd" || tools::file_ext(input$DC_to_be_saved_script_name) == "rmd" )){
       #   rv$script_rmd_not_saved_yet <- rv$script_rmd_not_saved_yet * (-1)
       # } else{
-      rmarkdown::render(file.path(script_base_dir,input$DC_to_be_saved_script_name))
+      # rmarkdown::render(file.path(script_base_dir,input$DC_to_be_saved_script_name))
+      create_pdf_including_result_upon_run_decoding(input$DC_to_be_saved_script_name)
 
       # }
 
@@ -669,6 +676,9 @@ validate(
   output$bin_show_chosen_raster = renderText({
     # temp_text = "Chose raster"
     # rv$raster_cur_dir_name <- parseDirPath(c(wd=eval(getwd())),input$bin_chosen_raster)
+
+    # we need this because it seems that as soon as you click file, sinyFiles first turns it into null then fill in
+    req(rv$raster_cur_dir_name)
     if(is.na(rv$raster_cur_dir_name)){
       "No file chosen yet"
     } else{
@@ -690,7 +700,7 @@ validate(
     # color2D.matplot(1 - temp_raster, border = NA, xlab = "Time (ms)",
     #                 ylab = "Trial")
 req(rv$mRaster_cur_data)
-    temp_dfMelted <- melt(rv$mRaster_cur_data)
+    temp_dfMelted <- reshape2::melt(rv$mRaster_cur_data)
     # magically, trials/rownames are oncverted from character to integer by melt. Times/colnames are also integer
     if(length(unique(factor(temp_dfMelted$value))) < 3){
       ggplot(temp_dfMelted, aes(x = Var2, y = Var1)) +
@@ -977,6 +987,12 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
   })
 
 
+  output$DC_pdf <- renderUI({
+    req(input$DC_to_be_saved_script_name)
+    tags$iframe(style="height:600px; width:100%", src= paste0(substr(basename(input$DC_to_be_saved_script_name), 1,nchar(basename(input$DC_to_be_saved_script_name))-3), "pdf"))
+
+
+  })
   observeEvent(input$Plot_create_pdf,{
     req(rv$result_chosen, input$Plot_timeseries_result_type)
     append_result_to_pdf_and_knit(rv$result_chosen, input$Plot_timeseries_result_type)

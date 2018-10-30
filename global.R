@@ -122,10 +122,7 @@ convert_r_into_rmd <- function(text){
 
   my_text = ""
 
-  my_text = paste0(my_text, "---\n\n\ntitle: 'Decoding Analysis'\n\n\noutput: pdf_document\n\n\n---\n\n\n",
-                   "```{r setup, include=FALSE}\n\n\n",
-                   "knitr::opts_chunk$set(echo = TRUE)\n\n\n",
-                   "```\n\n\n")
+  my_text = paste0(my_text, "---\ntitle: 'Decoding Analysis'\noutput: pdf_document\n---\n\n\n", "```{r setup, include=FALSE}\n\n\n", "knitr::opts_chunk$set(echo = TRUE)\n\n\n", "```\n\n\n")
 
   my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
@@ -286,7 +283,7 @@ append_result_to_pdf_and_knit <- function(result_chosen, Plot_timeseries_result_
 
   my_text = paste0(my_text,"selected_time_bin_names <- NDTr::get_center_bin_time(dimnames(selected_result)[[3]])\n\n\n")
 
-  my_text = paste0(my_text,"image.plot(selected_time_bin_names, selected_time_bin_names, selected_mean_results, legend.lab = 'Classification Accuracy', xlab = 'Test time (ms)', ylab = 'Train time (ms)', title = 'Temporal cross-training plot')\n\n\n")
+  my_text = paste0(my_text,"image.plot(selected_time_bin_names, selected_time_bin_names, selected_mean_results, legend.lab = 'Classification Accuracy', xlab = 'Test time (ms)', ylab = 'Train time (ms)'')\n\n\n")
 
   my_text = paste0(my_text, "abline(v = 0)\n\n\n```")
 
@@ -299,4 +296,37 @@ append_result_to_pdf_and_knit <- function(result_chosen, Plot_timeseries_result_
 
 }
 
+create_pdf_including_result_upon_run_decoding <- function(DC_to_be_saved_script_name){
 
+  my_new_file_name = file.path(www_base_dir, DC_to_be_saved_script_name)
+
+  file.create(my_new_file_name,  overwrite = TRUE)
+
+  potential_rmd_name <- file.path(script_base_dir, DC_to_be_saved_script_name)
+
+    # my_text = paste(readLines(potential_rmd_name), collapse = "")
+    my_text = sourcetools::read(potential_rmd_name)
+
+
+
+  my_text = paste0(my_text,"```{r}\n\n\n")
+
+  my_text = paste0(my_text,"selected_result <- DECODING_RESULTS$zero_one_loss_results\n\n\n")
+
+  my_text = paste0(my_text, "selected_mean_results <- colMeans(selected_result)\n\n\n")
+
+
+  my_text = paste0(my_text,"selected_time_bin_names <- NDTr::get_center_bin_time(dimnames(selected_result)[[3]])\n\n\n")
+
+  my_text = paste0(my_text,"image.plot(selected_time_bin_names, selected_time_bin_names, selected_mean_results, legend.lab = 'Classification Accuracy', xlab = 'Test time (ms)', ylab = 'Train time (ms)')\n\n\n")
+
+  my_text = paste0(my_text, "abline(v = 0)\n\n\n```")
+
+  write(my_text, file = my_new_file_name)
+
+  print(my_text)
+
+  rmarkdown::render(my_new_file_name, "pdf_document")
+
+
+}
