@@ -254,8 +254,10 @@ ui <- dashboardPage(
 
 
                                              ),
+
+
                                              tabPanel(
-                                               title = "Decoder",
+                                               title = "Run analysis",
                                                width = NULL,
                                                fluidRow(
                                                  column(
@@ -271,8 +273,8 @@ ui <- dashboardPage(
                                                      radioButtons("DC_script_mode", lLabels$DC_script_mode, c("R", "R Markdown"), selected = "R"),
                                                      uiOutput("DC_offer_scriptize"),
                                                      # textinput of filename to be saved if not existing and to be saved as if existing;
-                                                     uiOutput("DC_offer_save_displayed_script"),
-                                                     helpText("  or"),
+                                                     # uiOutput("DC_offer_save_displayed_script"),
+                                                     # helpText("  or"),
                                                      uiOutput("DC_offer_run_decoding")
 
                                                      # )

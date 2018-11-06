@@ -165,11 +165,9 @@ observe({
   })
 
   observe({
-    print("do?")
 
     req(input$DC_chosen_script_name)
 
-    print("do!")
 
     temp_df_file <- shinyFiles::parseFilePaths(c(wd= rv$script_base_dir),input$DC_chosen_script_name)
     # print(temp_df_file)
@@ -596,7 +594,7 @@ validate(
 
 
 
-
+  # UI element to get the name of the file to be saved (I think)
   output$DC_offer_save_displayed_script = renderUI({
     list(
       textInput("DC_to_be_saved_script_name", lLabels$DC_to_be_saved_script_name),
@@ -604,6 +602,9 @@ validate(
       uiOutput("DC_save_displayed_script_error")
     )
   })
+
+
+
 
   output$DC_offer_scriptize = renderUI({
     list(
@@ -614,6 +615,8 @@ validate(
 
     )
   })
+
+
 
   output$DC_offer_run_decoding = renderUI({
     list(
@@ -932,6 +935,8 @@ output$CV_show_level_repetition_info <- renderPlotly({
   temp_level_repetition_info <- reactive_level_repetition_info()
   temp_level_repetition_info$plotly
 })
+
+
 reactive_chosen_repetition_info <- reactive({
   req(input$CV_split, input$CV_repeat, reactive_level_repetition_info())
   temp_level_repetition_info <- reactive_level_repetition_info()
@@ -939,6 +944,7 @@ reactive_chosen_repetition_info <- reactive({
   list(num_repetition = input$CV_repeat * input$CV_split,
        num_sites_avail = nrow(filter(temp_level_repetition_info$num_repeats_across_levels_per_site, min_repeats >= input$CV_repeat * input$CV_split)))
 })
+
 
 output$CV_repeat <- renderUI({
   # browser()
@@ -962,12 +968,14 @@ observe({
 
 
 output$CV_show_chosen_repetition_info <- renderText({
+
   req(reactive_chosen_repetition_info())
   temp_chosen_repetition_info <- reactive_chosen_repetition_info()
-paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "trials of all levels as set on the Data Source tab, which renders the totol number of neurons available for decoding to be", "<font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", ".")
+
+  # paste("You selected", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "trials (). of all levels as set on the Data Source tab, which gives a total number of neurons available for decoding to be", "<font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", ".")
+  paste("You selected", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "trials (", input$CV_repeat,  " repeats x ",  input$CV_split, "CV splits). Based on the levels selected Data source tab, this gives <font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", " sites available for decoding.")
+
 })
-
-
 
 
 
@@ -993,6 +1001,9 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
 
 
   })
+
+
+
   observeEvent(input$Plot_create_pdf,{
     req(rv$result_chosen, input$Plot_timeseries_result_type)
     append_result_to_pdf_and_knit(rv$result_chosen, input$Plot_timeseries_result_type)
@@ -1029,7 +1040,7 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
     # print(input$Plot_timeseries_result_type)
     length(rv$result_data)
     typeof(rv$result_data)
-    head(rv$result_data)
+
     temp_result <- rv$result_data[[input$Plot_timeseries_result_type]]
 
     # get the mean over CV splits
@@ -1038,9 +1049,29 @@ paste("You demand", "<font color='red'>", temp_chosen_repetition_info$num_repeti
 
     temp_time_bin_names <- NDTr::get_center_bin_time(dimnames(temp_result)[[3]])
 
-    plot(temp_time_bin_names, diag(temp_mean_results), type = "o", xlab = "Time (ms)", ylab = "Classification Accuracy")
+    # plot(temp_time_bin_names, diag(temp_mean_results), type = "o", xlab = "Time (ms)", ylab = "Classification Accuracy")
+    # abline(v = 0)
 
-    abline(v = 0)
+    temp_result_df <- data.frame(time = temp_time_bin_names, results = diag(temp_mean_results))
+
+
+    if (input$Plot_timeseries_result_type == "zero_one_loss_results") {
+      ylabel <- "Classification accuracy"
+    } else if (input$Plot_timeseries_result_type == "rank_results") {
+      ylabel <- "Normalized rank"
+    } else if (input$Plot_timeseries_result_type == "decision_value_results") {
+      ylabel <- "Decision values"
+    }
+
+
+    temp_result_df %>%
+      ggplot(aes(x = time, y = results)) +
+      geom_line() +
+      xlab("Time (ms)") +
+      ylab(ylabel) +
+      theme_bw()
+
+
 
   })
 
