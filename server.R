@@ -386,9 +386,15 @@ print(typeof(input$bin_bin_data))
 
     if(input$DC_script_mode == "R Markdown"){
       rv$displayed_script <- create_script_in_rmd(lDecoding_paras, rv)
-    } else (
+    } else if (input$DC_script_mode == "R") {
       rv$displayed_script <- create_script_in_r(lDecoding_paras, rv)
-    )
+    } else if (input$DC_script_mode == "Matlab") {
+      rv$displayed_script <- create_script_in_matlab(lDecoding_paras, rv)
+      #print('blah')
+    }
+
+
+
   })
 
 
@@ -620,13 +626,15 @@ validate(
 
   output$DC_offer_run_decoding = renderUI({
     list(
-
-
       helpText(""),
       actionButton("DC_run_decoding", lLabels$DC_run_decoding),
       uiOutput("DC_run_decoding_error")
     )
   })
+
+
+
+
 
   output$bin_offer_create_raster = renderUI({
     req(rv$raster_cur_dir_name)
@@ -667,13 +675,21 @@ validate(
   })
 
 
+
+
+
   output$bin_show_create_bin_function_run = renderText({
     rv$create_bin_function_run
   })
 
+
+
+
   output$bin_show_create_raster_function_run = renderText(({
     rv$create_raster_funciton_run
   }))
+
+
 
 
   output$bin_show_chosen_raster = renderText({
@@ -690,10 +706,16 @@ validate(
     }
   })
 
+
+
+
   output$bin_show_raster_cur_file_name = renderText({
     paste0("current data shown:", "\n", rv$raster_cur_file_name)
 
   })
+
+
+
 
   output$bin_raster_plot = renderPlot({
     # print(head(rv$raster_cur_data))
@@ -721,6 +743,10 @@ req(rv$mRaster_cur_data)
 
   })
 
+
+
+
+
   output$bin_PSTH = renderPlot({
     # req(rv$raster_cur_data)
 
@@ -741,6 +767,9 @@ req(rv$mRaster_cur_data)
   })
 
 
+
+
+
   output$DS_show_chosen_bin = renderText({
     if(is.na(rv$binned_file_name)){
       "No file chosen yet"
@@ -750,6 +779,9 @@ req(rv$mRaster_cur_data)
     }
   })
 
+
+
+
   output$DS_basic_list_of_var_to_decode = renderUI({
     req(rv$binned_file_name)
 
@@ -757,10 +789,12 @@ req(rv$mRaster_cur_data)
                 lLabels$DS_basic_var_to_decode,
                 rv$binned_all_var
                 # c("")
-
     )
 
   })
+
+
+
 
   output$DS_gen_list_of_var_to_decode = renderUI({
     req(rv$binned_file_name)
@@ -769,10 +803,13 @@ req(rv$mRaster_cur_data)
                 lLabels$DS_gen_var_to_decode,
                 rv$binned_all_var
                 # c("")
-
     )
 
   })
+
+
+
+
 
   output$DS_basic_list_of_levels_to_use = renderUI({
 
@@ -906,6 +943,10 @@ req(rv$mRaster_cur_data)
     }
 
   })
+
+
+
+
   reactive_level_repetition_info <- reactive({
     req(reactive_DS_levels_to_use())
 
@@ -922,60 +963,73 @@ req(rv$mRaster_cur_data)
     }
   })
 
+
+
+
   output$CV_max_repetition_avail_with_any_site <- renderText({
-req(reactive_level_repetition_info())
+
+    req(reactive_level_repetition_info())
     temp_level_repetition_info <- reactive_level_repetition_info()
 
         paste("Levels chosen for training:", "<font color='red'>", paste(reactive_DS_levels_to_use(), collapse = ', '),"<br/>", "</font>", "The maximum number of repetitions across all the levels for training as set on the Data Source tab is", "<font color='red'>",temp_level_repetition_info$max_repetition_avail_with_any_site, "</font>", ".")
+  })
 
+
+  output$CV_show_level_repetition_info <- renderPlotly({
+
+    req(reactive_level_repetition_info())
+    temp_level_repetition_info <- reactive_level_repetition_info()
+    temp_level_repetition_info$plotly
+  })
+
+
+
+  reactive_chosen_repetition_info <- reactive({
+    req(input$CV_split, input$CV_repeat, reactive_level_repetition_info())
+    temp_level_repetition_info <- reactive_level_repetition_info()
+
+    list(num_repetition = input$CV_repeat * input$CV_split,
+       num_sites_avail = nrow(filter(temp_level_repetition_info$num_repeats_across_levels_per_site, min_repeats >= input$CV_repeat * input$CV_split)))
+    })
+
+
+
+  output$CV_repeat <- renderUI({
+    # browser()
+    numericInput("CV_repeat", lLabels$CV_repeat, value = 2, min = 1)
+  })
+
+
+
+
+
+  output$CV_split <- renderUI({
+      numericInput("CV_split", lLabels$CV_split, value = 5, min = 2)
+    })
+
+
+
+
+  observe({
+    req(reactive_level_repetition_info())
+    temp_level_repetition_info <- reactive_level_repetition_info()
+    updateNumericInput(session, "CV_repeat", max = floor(temp_level_repetition_info$max_repetition_avail_with_any_site/input$CV_split))
+    updateNumericInput(session, "CV_split", max = floor(temp_level_repetition_info$max_repetition_avail_with_any_site/input$CV_repeat))
+  })
+
+
+
+
+  output$CV_show_chosen_repetition_info <- renderText({
+
+    req(reactive_chosen_repetition_info())
+    temp_chosen_repetition_info <- reactive_chosen_repetition_info()
+
+    # paste("You selected", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "trials (). of all levels as set on the Data Source tab, which gives a total number of neurons available for decoding to be", "<font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", ".")
+    paste("You selected", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "trials (", input$CV_repeat,  " repeats x ",  input$CV_split, "CV splits). Based on the levels selected Data source tab, this gives <font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", " sites available for decoding.")
 
   })
-output$CV_show_level_repetition_info <- renderPlotly({
-  req(reactive_level_repetition_info())
-  temp_level_repetition_info <- reactive_level_repetition_info()
-  temp_level_repetition_info$plotly
-})
 
-
-reactive_chosen_repetition_info <- reactive({
-  req(input$CV_split, input$CV_repeat, reactive_level_repetition_info())
-  temp_level_repetition_info <- reactive_level_repetition_info()
-
-  list(num_repetition = input$CV_repeat * input$CV_split,
-       num_sites_avail = nrow(filter(temp_level_repetition_info$num_repeats_across_levels_per_site, min_repeats >= input$CV_repeat * input$CV_split)))
-})
-
-
-output$CV_repeat <- renderUI({
-  # browser()
-
-    numericInput("CV_repeat", lLabels$CV_repeat, value = 2, min = 1)
-})
-
-output$CV_split <- renderUI({
-
-    numericInput("CV_split", lLabels$CV_split, value = 5, min = 2)
-
-
-})
-
-observe({
-  req(reactive_level_repetition_info())
-  temp_level_repetition_info <- reactive_level_repetition_info()
-  updateNumericInput(session, "CV_repeat", max = floor(temp_level_repetition_info$max_repetition_avail_with_any_site/input$CV_split))
-  updateNumericInput(session, "CV_split", max = floor(temp_level_repetition_info$max_repetition_avail_with_any_site/input$CV_repeat))
-})
-
-
-output$CV_show_chosen_repetition_info <- renderText({
-
-  req(reactive_chosen_repetition_info())
-  temp_chosen_repetition_info <- reactive_chosen_repetition_info()
-
-  # paste("You selected", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "trials (). of all levels as set on the Data Source tab, which gives a total number of neurons available for decoding to be", "<font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", ".")
-  paste("You selected", "<font color='red'>", temp_chosen_repetition_info$num_repetition, "</font>", "trials (", input$CV_repeat,  " repeats x ",  input$CV_split, "CV splits). Based on the levels selected Data source tab, this gives <font color='red'>", temp_chosen_repetition_info$num_sites_avail, "</font>", " sites available for decoding.")
-
-})
 
 
 
@@ -984,23 +1038,24 @@ output$CV_show_chosen_repetition_info <- renderText({
     basename(rv$script_chosen)
   })
 
+
+
   output$DC_ace = renderUI({
     # print(rv$displayed_script)
     shinyAce::aceEditor("script",
                         rv$displayed_script,
                         # NULL,
                         mode = input$DC_script_mode)
-
-
   })
+
+
 
 
   output$DC_pdf <- renderUI({
     req(input$DC_to_be_saved_script_name)
     tags$iframe(style="height:600px; width:100%", src= paste0(substr(basename(input$DC_to_be_saved_script_name), 1,nchar(basename(input$DC_to_be_saved_script_name))-3), "pdf"))
-
-
   })
+
 
 
 
@@ -1013,13 +1068,7 @@ output$CV_show_chosen_repetition_info <- renderText({
       tags$iframe(style="height:600px; width:100%", src= paste0(substr(basename(rv$result_chosen), 1,nchar(basename(rv$result_chosen))-3), "pdf"))
       # return(paste('<iframe style="height:600px; width:100%" src="', file.path(script_base_dir, paste0(substr(basename(rv$result_chosen), 1,nchar(basename(rv$result_chosen))-3), "pdf")), '"></iframe>', sep = ""))
       # return(paste('<iframe style="height:600px; width:100%" src="', "https://asterius.hampshire.edu/s/afd81b2933ea5d1a296e3/files/GitHub/shinyNDTr/scripts/rmd.pdf", '"></iframe>', sep = ""))
-
-  })
-
-
-
-
-
+    })
 
   })
 

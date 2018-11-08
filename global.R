@@ -109,13 +109,18 @@ move_file <- function(from, to) {
   file.rename(from = from,  to = to)
 }
 
-preprocess_paras <- function(my_decoding_paras){
+preprocess_paras <- function(my_decoding_params){
   print("attach path")
 
-  my_decoding_paras$DC_to_be_saved_result_name <- file.path(result_base_dir,my_decoding_paras$DC_to_be_saved_result_name)
+  my_decoding_params$DC_to_be_saved_result_name <- file.path(result_base_dir,my_decoding_params$DC_to_be_saved_result_name)
 
-  return(my_decoding_paras)
+  return(my_decoding_params)
 }
+
+
+
+
+
 
 
 convert_r_into_rmd <- function(text){
@@ -137,121 +142,30 @@ convert_r_into_rmd <- function(text){
   return(my_text)
 }
 
-create_script_in_rmd <- function(my_decoding_paras, rv) {
 
 
-r_text <- create_script_in_r(my_decoding_paras, rv)
+
+
+
+create_script_in_rmd <- function(my_decoding_params, rv) {
+
+r_text <- create_script_in_r(my_decoding_params, rv)
 
 rmd_text <- convert_r_into_rmd(r_text)
 
 
-
-
 return(rmd_text)
 
-
-
 }
 
 
 
-create_script_in_r <- function(my_decoding_paras, rv) {
-
-
-
-  print(names(my_decoding_paras))
-
-  my_decoding_paras = preprocess_paras(my_decoding_paras)
-
-  my_text = ""
-
-  # my_text = paste0(my_text, "---\n\n\ntitle: 'Decoding Analysis'\n\n\noutput: pdf_document\n\n\n---\n\n\n",
-  #                  "```{r setup, include=FALSE}\n\n\n",
-  #                  "knitr::opts_chunk$set(echo = TRUE)\n\n\n",
-  #                  "```\n\n\n")
-  #
-  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-  my_text = paste0(my_text, "binned_file_name <-", "'",rv$binned_file_name,"'", "\n\n\n")
-
-
-
-  #   my_text = paste0(my_text, "```\n\n\n")
-  #   my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-  if(my_decoding_paras$DS_type == "basic_DS"){
-    my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_paras$DS_basic_var_to_decode,"'", "\n\n\n")
-    my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_paras$CV_split, "\n\n\n")
-
-    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n\n\n")
-    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_paras$CV_repeat, "\n\n\n")
-
-    # this one is bad because level_to_use can be passed from the previous selection
-    # if(!is.null(my_decoding_paras$DS_basic_level_to_use)){
-    if(!my_decoding_paras$DS_bUse_all_levels){
-      my_text = paste0(my_text, "ds$level_to_use <- ", deparse(dput(my_decoding_paras$DS_basic_level_to_use)), "\n\n\n")
-    }
-  }
 
 
 
 
-  # my_text = paste0(my_text, "```\n\n\n")
-  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
 
 
-  my_text = paste0(my_text, "cl <- NDTr::", my_decoding_paras$CL, "$new()\n\n\n")
-
-
-  # my_text = paste0(my_text, "```\n\n\n")
-  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-
-  my_text = paste0(my_text, "fps <- list(")
-
-
-  select_k_text = ""
-  norm_text = ""
-
-  if(!is.null(my_decoding_paras$FP)){
-    if(sum(grepl(all_fp[2], my_decoding_paras$FP)) == 1){
-      norm_text = paste0(norm_text, "NDTr::", all_fp[2], "$new()")
-      my_text = paste0(my_text, norm_text, ",")
-    }
-
-    if(sum(grepl(all_fp[1], my_decoding_paras$FP)) == 1){
-      select_k_text = paste0(select_k_text, "NDTr::", all_fp[2], "$new(","num_sites_to_use = ", my_decoding_paras$FP_selected_k, ",", "num_sites_to_exclude = ", my_decoding_paras$FP_excluded_k,")" )
-      my_text = paste0(my_text, select_k_text)
-    } else {
-      my_text = substr(my_text, 1, nchar(my_text)-1)
-
-    }
-  }
-
-# browser()
-  my_text = paste0(my_text, ")\n\n\n")
-
-
-  # my_text = paste0(my_text, "```\n\n\n")
-  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n\n\n")
-
-  # my_text = paste0(my_text, "```\n\n\n")
-  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
-
-
-  my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n\n\n")
-
-  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '",my_decoding_paras$DC_to_be_saved_result_name, "')")
-
-  # my_text = paste0(my_text, "```\n\n\n")
-
-
-
-  return(my_text)
-
-}
 
 append_result_to_pdf_and_knit <- function(result_chosen, Plot_timeseries_result_type){
 
@@ -293,8 +207,11 @@ append_result_to_pdf_and_knit <- function(result_chosen, Plot_timeseries_result_
 
   rmarkdown::render(my_new_file_name, "pdf_document")
 
-
 }
+
+
+
+
 
 create_pdf_including_result_upon_run_decoding <- function(DC_to_be_saved_script_name){
 
@@ -304,8 +221,8 @@ create_pdf_including_result_upon_run_decoding <- function(DC_to_be_saved_script_
 
   potential_rmd_name <- file.path(script_base_dir, DC_to_be_saved_script_name)
 
-    # my_text = paste(readLines(potential_rmd_name), collapse = "")
-    my_text = sourcetools::read(potential_rmd_name)
+  # my_text = paste(readLines(potential_rmd_name), collapse = "")
+  my_text = sourcetools::read(potential_rmd_name)
 
 
 
@@ -328,5 +245,217 @@ create_pdf_including_result_upon_run_decoding <- function(DC_to_be_saved_script_
 
   rmarkdown::render(my_new_file_name, "pdf_document")
 
+}
+
+
+
+
+
+
+
+
+
+
+# create matlab script...
+
+create_script_in_r <- function(my_decoding_params, rv) {
+
+
+  print(names(my_decoding_params))
+
+  my_decoding_params = preprocess_paras(my_decoding_params)
+
+  my_text = ""
+
+
+
+
+  my_text = paste0(my_text, "binned_file_name =", "'",rv$binned_file_name,"'", "\n\n\n")
+
+
+
+
+  if(my_decoding_params$DS_type == "basic_DS"){
+    my_text = paste0(my_text, "variable_to_decode <-", "'",my_decoding_params$DS_basic_var_to_decode,"'", "\n\n\n")
+    my_text = paste0(my_text, "num_cv_splits <- ", my_decoding_params$CV_split, "\n\n\n")
+
+    my_text = paste0(my_text, "ds <- NDTr::basic_DS$new(binned_file_name, variable_to_decode, num_cv_splits)\n\n\n")
+    my_text = paste0(my_text, "ds$num_repeats_per_level_per_cv_split <- ", my_decoding_params$CV_repeat, "\n\n\n")
+
+    # this one is bad because level_to_use can be passed from the previous selection
+    # if(!is.null(my_decoding_params$DS_basic_level_to_use)){
+    if(!my_decoding_params$DS_bUse_all_levels){
+      my_text = paste0(my_text, "ds$level_to_use <- ", deparse(dput(my_decoding_params$DS_basic_level_to_use)), "\n\n\n")
+    }
+  }
+
+
+
+
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
+
+
+  my_text = paste0(my_text, "cl <- NDTr::", my_decoding_params$CL, "$new()\n\n\n")
+
+
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
+
+
+  my_text = paste0(my_text, "fps <- list(")
+
+
+  select_k_text = ""
+  norm_text = ""
+
+  if(!is.null(my_decoding_params$FP)){
+    if(sum(grepl(all_fp[2], my_decoding_params$FP)) == 1){
+      norm_text = paste0(norm_text, "NDTr::", all_fp[2], "$new()")
+      my_text = paste0(my_text, norm_text, ",")
+    }
+
+    if(sum(grepl(all_fp[1], my_decoding_params$FP)) == 1){
+      select_k_text = paste0(select_k_text, "NDTr::", all_fp[2], "$new(","num_sites_to_use = ", my_decoding_params$FP_selected_k, ",", "num_sites_to_exclude = ", my_decoding_params$FP_excluded_k,")" )
+      my_text = paste0(my_text, select_k_text)
+    } else {
+      my_text = substr(my_text, 1, nchar(my_text)-1)
+
+    }
+  }
+
+  # browser()
+  my_text = paste0(my_text, ")\n\n\n")
+
+
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
+
+  my_text = paste0(my_text, "cv <- NDTr::standard_CV$new(ds, cl, fps)\n\n\n")
+
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
+
+
+  my_text = paste0(my_text, "DECODING_RESULTS <- cv$run_decoding()\n\n\n")
+
+  my_text = paste0(my_text, "save('DECODING_RESULTS', file = '",my_decoding_params$DC_to_be_saved_result_name, "')")
+
+  # my_text = paste0(my_text, "```\n\n\n")
+
+
+
+  return(my_text)
 
 }
+
+
+
+
+
+# create the script code for running a Matlab analysis
+
+create_script_in_matlab <- function(my_decoding_params, rv) {
+
+
+
+  print(names(my_decoding_params))
+
+  my_decoding_params = preprocess_paras(my_decoding_params)
+
+  my_text = "% add the path to the NDT so add_ndt_paths_and_init_rand_generator can be called
+toolbox_basedir_name = 'ndt.1.0.4/'
+addpath(toolbox_basedir_name);
+
+% add the NDT paths using add_ndt_paths_and_init_rand_generator
+add_ndt_paths_and_init_rand_generator"
+
+
+
+  my_text = paste0(my_text, "binned_file_name =", "'",rv$binned_file_name,"'", "\n\n\n")
+
+
+
+  if(my_decoding_params$DS_type == "basic_DS"){
+    my_text = paste0(my_text, "specific_binned_label_name =", "'",my_decoding_params$DS_basic_var_to_decode,"';", "\n\n\n")
+    my_text = paste0(my_text, "num_cv_splits = ", my_decoding_params$CV_split, ";\n\n\n")
+
+    my_text = paste0(my_text, "ds = basic_DS(binned_file_name, variable_to_decode, num_cv_splits);\n\n\n")
+    my_text = paste0(my_text, "ds.num_repeats_per_level_per_cv_split = ", my_decoding_params$CV_repeat, ";\n\n\n")
+
+    # this one is bad because level_to_use can be passed from the previous selection
+    # if(!is.null(my_decoding_params$DS_basic_level_to_use)){
+    if(!my_decoding_params$DS_bUse_all_levels){
+      my_text = paste0(my_text, "ds.lable_names_to_use <- ", deparse(dput(my_decoding_params$DS_basic_level_to_use)), ";\n\n\n")
+    }
+  }
+
+
+
+
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
+
+
+  my_text = paste0(my_text, "cl = ", my_decoding_params$CL, ";\n\n\n")
+
+
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
+
+
+  my_text = paste0(my_text, "fps = {")
+
+
+  select_k_text = ""
+  norm_text = ""
+
+  if(!is.null(my_decoding_params$FP)){
+    if(sum(grepl(all_fp[2], my_decoding_params$FP)) == 1){
+      norm_text = paste0(norm_text, all_fp[2])
+      my_text = paste0(my_text, norm_text, ",")
+    }
+
+    if(sum(grepl(all_fp[1], my_decoding_params$FP)) == 1){
+      select_k_text = paste0(select_k_text, "NDTr::", all_fp[2], "$new(","num_sites_to_use = ", my_decoding_params$FP_selected_k, ",", "num_sites_to_exclude = ", my_decoding_params$FP_excluded_k,")" )
+      my_text = paste0(my_text, select_k_text)
+    } else {
+      my_text = substr(my_text, 1, nchar(my_text)-1)
+
+    }
+  }
+
+  # browser()
+  my_text = paste0(my_text, "};\n\n\n")
+
+
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
+
+  my_text = paste0(my_text, "cv = standard_resample_CV(ds, cl, fps);\n\n\n")
+
+  # my_text = paste0(my_text, "```\n\n\n")
+  # my_text = paste0(my_text, "\n\n\n```{r}\n\n\n")
+
+
+  my_text = paste0(my_text, "DECODING_RESULTS =  cv.run_cv_decoding;\n\n\n")
+
+  my_text = paste0(my_text, "save('", my_decoding_params$DC_to_be_saved_result_name, "', DECODING_RESULTS", ");")
+
+  # my_text = paste0(my_text, "```\n\n\n")
+
+
+
+  return(my_text)
+
+}  # end create Matlab analysis...
+
+
+
+
+
+
+
+
+
+

@@ -270,7 +270,7 @@ ui <- dashboardPage(
                                                      solidHeader = TRUE,
 
 
-                                                     radioButtons("DC_script_mode", lLabels$DC_script_mode, c("R", "R Markdown"), selected = "R"),
+                                                     radioButtons("DC_script_mode", lLabels$DC_script_mode, c("R", "R Markdown", "Matlab"), selected = "R"),
                                                      uiOutput("DC_offer_scriptize"),
                                                      # textinput of filename to be saved if not existing and to be saved as if existing;
                                                      # uiOutput("DC_offer_save_displayed_script"),
