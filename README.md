@@ -1,9 +1,9 @@
 
-# shinyNDTr - A web-based interface for neural decoding in R
+# shinyNDTr
 ## curretn status
 I pulled ehtan's changes then found bugs in my code. The pull was reverted and the bug need to be fixed yet.
 
-## Getting starteT
+## Getting started
 * `install.packages(c("yaml","digest", "devtools", "curl"))`, which provide you with the basic tools for package development"
 * For developlers:
    * Assume you working directory is a GitHub directory of all git repos
