@@ -3,6 +3,13 @@
 ## curretn status
 I pulled ehtan's changes then found bugs in my code. The pull was reverted and the bug need to be fixed yet.
 
+## resources cindy used 
+* https://shiny.rstudio.com/reference/shiny/0.11/ 
+* must-watch: Joe Cheng’s talk. I watched most of them
+https://www.rstudio.com/resources/webinars/shiny-developer-conference/
+* https://rstudio.github.io/shinydashboard/structure.html#mixed-row-and-column-layout
+
+
 ## cindy's shiny coding scheme 
 * global variables are not prefixed
 * inputs and outputs are prefixed with the name of the tab they are under, for example, DS_list_of_binned_files.
