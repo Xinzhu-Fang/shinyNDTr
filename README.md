@@ -3,6 +3,23 @@
 ## curretn status
 I pulled ehtan's changes then found bugs in my code. The pull was reverted and the bug need to be fixed yet.
 
+## cindy's shiny coding scheme 
+* global variables are not prefixed
+* inputs and outputs are prefixed with the name of the tab they are under, for example, DS_list_of_binned_files.
+* reactive functions are prefixed with "reactive"
+* variables in the scope of renderUI are prefixed with "private"
+* variables created simply to pass value inside functions are prefixed with "temp"
+* reactiveValues are prefixed with "rv"
+* eventReactive functions are prefixed with "er"
+
+## key components
+* chosen_raster, chosen_binned, chosen_script, and chosen_result are chosen from the server using shinyFiles
+* to_be_saved_script and to_be_saved_result
+
+
+
+
+
 ## Getting started
 * `install.packages(c("yaml","digest", "devtools", "curl"))`, which provide you with the basic tools for package development"
 * For developlers:
@@ -18,17 +35,12 @@ I pulled ehtan's changes then found bugs in my code. The pull was reverted and t
 * `shiny::runApp('shinyNDTr')`
 
 
-Welcome to the NDTr_Shiny_app wiki!
-
 ## to do
 * sample -> data for the three DS functions
 * decide if we want to use tidymodel and connect the app to svm
 * decoding result doesn't contain information about DS and FP
 
 
-## essential components
-* chosen_raster, chosen_binned, chosen_script, and chosen_result are chosen from the server using shinyFiles
-* to_be_saved_script and to_be_saved_result
 
 ## future enhancement
 * use observe to call funcitons, so function is spilled before execution?
